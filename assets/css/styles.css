@@ -813,3 +813,4 @@ strong { color: var(--text-strong); font-weight: 650; }
   .timeline-item:nth-of-type(even) .timeline-popup { translate: 14px 8px; }
 }
 .education-card + .education-card { margin-top: 1.25rem; }
+.edu-links { display: block; margin-top: 0.4rem; }
