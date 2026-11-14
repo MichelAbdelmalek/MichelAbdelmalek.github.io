@@ -2,7 +2,7 @@
 
 Personal portfolio built with plain HTML5, CSS3 and vanilla JavaScript. No frameworks, no npm, no build step, no third-party scripts or trackers.
 
-Live site: https://michelwakim.github.io/
+Live site: https://michelabdelmalek.github.io/
 
 ## Structure
 

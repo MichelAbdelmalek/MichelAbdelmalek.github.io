@@ -17,5 +17,5 @@
   <rect x="80" y="380" width="260" height="5" rx="2.5" fill="url(#ac)"/>
   <text x="80" y="450" font-family="system-ui,sans-serif" font-size="28" fill="#94a3b8">.NET · Angular · Distributed Systems on AWS</text>
   <text x="80" y="560" font-family="system-ui,sans-serif" font-weight="600" font-size="24" fill="#60a5fa">10x faster APIs · 17x faster queries · 100 live tenants</text>
-  <text x="1120" y="580" text-anchor="end" font-family="system-ui,sans-serif" font-size="20" fill="#64748b">michelwakim.github.io</text>
+  <text x="1120" y="580" text-anchor="end" font-family="system-ui,sans-serif" font-size="20" fill="#64748b">michelabdelmalek.github.io</text>
 </svg>
