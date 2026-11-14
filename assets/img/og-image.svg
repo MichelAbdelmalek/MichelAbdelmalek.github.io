@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a0d14"/>
+      <stop offset="1" stop-color="#1a1240"/>
+    </linearGradient>
+    <linearGradient id="ac" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1010" cy="140" r="220" fill="#8b5cf6" opacity="0.12"/>
+  <circle cx="1100" cy="470" r="160" fill="#3b82f6" opacity="0.12"/>
+  <text x="80" y="260" font-family="system-ui,sans-serif" font-weight="800" font-size="76" fill="#f1f5f9">Michel Abdelmalek</text>
+  <text x="80" y="340" font-family="system-ui,sans-serif" font-size="38" fill="#cbd5e1">Senior Full Stack Engineer</text>
+  <rect x="80" y="380" width="260" height="5" rx="2.5" fill="url(#ac)"/>
+  <text x="80" y="450" font-family="system-ui,sans-serif" font-size="28" fill="#94a3b8">.NET · Angular · Distributed Systems on AWS</text>
+  <text x="80" y="560" font-family="system-ui,sans-serif" font-weight="600" font-size="24" fill="#60a5fa">10x faster APIs · 17x faster queries · 100 live tenants</text>
+  <text x="1120" y="580" text-anchor="end" font-family="system-ui,sans-serif" font-size="20" fill="#64748b">michelwakim.github.io</text>
+</svg>

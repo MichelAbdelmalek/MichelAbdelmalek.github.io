@@ -1,0 +1,17 @@
+# Original CV contains private contact details - never commit
+CV.pdf
+*.pdf
+!assets/Michel_Abdelmalek_CV_public.pdf
+
+# Local preview screenshots
+preview/
+
+# Secrets / env
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
