@@ -812,3 +812,4 @@ strong { color: var(--text-strong); font-weight: 650; }
   .timeline-item:nth-of-type(odd) .timeline-popup { translate: -14px 8px; }
   .timeline-item:nth-of-type(even) .timeline-popup { translate: 14px 8px; }
 }
+.education-card + .education-card { margin-top: 1.25rem; }
