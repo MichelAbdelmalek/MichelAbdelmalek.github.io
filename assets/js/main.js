@@ -253,13 +253,13 @@
 
         ay += 0.006 + tx * 0.025; ax += (0.35 + ty * 0.9 - ax) * 0.04;
         var light = currentTheme() === "light";
-        var c1 = light ? [29, 78, 216] : [59, 130, 246], c2 = light ? [109, 40, 217] : [155, 109, 255];
+        var c1 = light ? [29, 78, 216] : [59, 130, 246], c2 = light ? [29, 78, 216] : [96, 165, 250];
         var cy_ = Math.cos(ay), sy_ = Math.sin(ay), cx_ = Math.cos(ax), sx_ = Math.sin(ax);
         var CAM = 4, K = S * 0.25;
 
         g.clearRect(0, 0, S, S);
         var glow = g.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S * 0.5);
-        glow.addColorStop(0, light ? "rgba(109,40,217,0.10)" : "rgba(139,92,246,0.18)");
+        glow.addColorStop(0, light ? "rgba(29,78,216,0.10)" : "rgba(59,130,246,0.16)");
         glow.addColorStop(1, "rgba(0,0,0,0)");
         g.fillStyle = glow; g.fillRect(0, 0, S, S);
 
