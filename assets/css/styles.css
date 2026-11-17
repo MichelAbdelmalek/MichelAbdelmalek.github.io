@@ -303,6 +303,7 @@ strong { color: var(--text-strong); font-weight: 600; }
   animation: blink 1s steps(1) infinite;
 }
 @keyframes blink { 50% { opacity: 0; } }
+.hero-lead { margin-top: 1rem; max-width: 36rem; color: var(--text); font-size: clamp(1rem, 2.4vw, 1.2rem); }
 .hero-meta { margin-top: 0.5rem; color: var(--text-muted); max-width: 40rem; }
 .hero-ctas { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 2rem; }
 
@@ -339,6 +340,13 @@ strong { color: var(--text-strong); font-weight: 600; }
 /* About */
 .about-text p + p { margin-top: 1rem; }
 .about-text { max-width: 46rem; font-size: 1.06rem; }
+.about-layout { display: grid; gap: 2rem; }
+.about-facts { padding: 1.5rem; display: grid; gap: 1rem; align-content: start; }
+.about-facts dt { color: var(--text-muted); font-size: 0.85rem; }
+.about-facts dd { color: var(--text-strong); font-weight: 500; }
+@media (min-width: 900px) {
+  .about-layout { grid-template-columns: minmax(0, 1fr) 320px; gap: 3rem; align-items: start; }
+}
 
 /* Impact */
 .impact-grid {
@@ -418,8 +426,9 @@ strong { color: var(--text-strong); font-weight: 600; }
   border-radius: 8px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #fff;
-  background: #1d4ed8;
+  color: var(--text-strong);
+  background: var(--surface);
+  border: 1px solid var(--border);
   vertical-align: 2px;
 }
 .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; animation: blink 2s ease-in-out infinite; }
@@ -432,7 +441,7 @@ strong { color: var(--text-strong); font-weight: 600; }
   font-weight: 600;
   font-size: 0.88rem;
   color: var(--text-strong);
-  background: rgba(59, 130, 246, 0.2);
+  background: var(--surface);
   border: 1px solid var(--border);
 }
 .timeline-bullets { display: grid; gap: 0.75rem; }
@@ -528,7 +537,7 @@ strong { color: var(--text-strong); font-weight: 600; }
 .education-meta { color: var(--text-muted); font-size: 0.92rem; display: flex; flex-direction: column; }
 .languages-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
 .language-badge { padding: 1.25rem 1.5rem; }
-.language-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.75rem; }
+.language-top { display: flex; justify-content: space-between; align-items: baseline; }
 .language-name { color: var(--text-strong); font-weight: 600; }
 .language-level { color: var(--text-muted); font-size: 0.92rem; }
 .language-bar { height: 8px; border-radius: 8px; background: var(--border); overflow: hidden; }
