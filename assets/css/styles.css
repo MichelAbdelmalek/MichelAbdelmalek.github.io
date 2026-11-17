@@ -124,6 +124,19 @@ strong { color: var(--text-strong); font-weight: 600; }
 }
 
 .gradient-text { color: var(--accent-1); }
+.hero-name.gradient-text {
+  --name-from: #7db3ff;
+  --name-to: #2563eb;
+  background: linear-gradient(100deg, var(--name-from) 0%, var(--name-to) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .hero-name.gradient-text { --name-from: #2563eb; --name-to: #1e3a8a; }
+}
+:root[data-theme="light"] .hero-name.gradient-text { --name-from: #2563eb; --name-to: #1e3a8a; }
 
 /* ===== Navbar ===== */
 .navbar {
