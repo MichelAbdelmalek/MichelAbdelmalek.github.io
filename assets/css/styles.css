@@ -233,16 +233,25 @@ strong { color: var(--text-strong); font-weight: 600; }
 @media (max-width: 899.98px) {
   .hamburger { display: none; }
   .navbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .nav-menu {
+    --dock-bg: rgba(40, 46, 62, 0.42);
+    --dock-edge: rgba(255, 255, 255, 0.16);
+    --dock-hi: rgba(255, 255, 255, 0.14);
     top: auto;
-    bottom: 0;
+    left: 12px;
+    right: 12px;
+    bottom: calc(8px + env(safe-area-inset-bottom));
     z-index: 100;
     flex-direction: row;
     justify-content: space-between;
-    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
-    border-bottom: 0;
-    border-top: 1px solid var(--border);
+    padding: 6px;
+    border: 1px solid var(--dock-edge);
+    border-radius: 28px;
+    background: var(--dock-bg);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
     transform: none;
     visibility: visible;
   }
@@ -262,7 +271,13 @@ strong { color: var(--text-strong); font-weight: 600; }
   .nav-link span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-link:not(.active) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .nav-link:not(.active) { padding: 12px 0 14px; }
-  .nav-link.active { color: var(--accent-1); box-shadow: none; }
+  .nav-link { border-radius: 22px; }
+  .nav-link.active { color: var(--text-strong); background: var(--dock-hi); box-shadow: none; }
+  .nav-link.active svg { color: var(--accent-1); }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) .nav-menu { --dock-bg: rgba(255, 255, 255, 0.5); --dock-edge: rgba(255, 255, 255, 0.8); --dock-hi: rgba(15, 23, 42, 0.08); box-shadow: 0 10px 30px rgba(30, 41, 80, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
+  }
+  :root[data-theme="light"] .nav-menu { --dock-bg: rgba(255, 255, 255, 0.5); --dock-edge: rgba(255, 255, 255, 0.8); --dock-hi: rgba(15, 23, 42, 0.08); box-shadow: 0 10px 30px rgba(30, 41, 80, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.9); }
 }
 
 /* ===== Hero ===== */
