@@ -95,115 +95,311 @@
       }
     }
 
-    /* ---------- 3D pool scene: caustics floor, lane ropes, ripples ---------- */
-    var c3 = document.getElementById("hero-3d");
-    if (c3 && c3.getContext) {
-      var g = c3.getContext("2d");
+    /* ---------- 3D pool: refracted tile floor, lane markings, ropes, camera drift ---------- */
+    (function () {
+      var cv = document.getElementById("hero-3d");
+      if (!cv || !cv.getContext) return;
+      var g = cv.getContext("2d");
       var lo = document.createElement("canvas"), lg = lo.getContext("2d");
-      var W3 = 0, H3 = 0, LW = 0, LH = 0, img = null, t3 = 0, run3 = false, raf3 = 0, last3 = 0, frameN = 0;
-      var ptr = { x: 0, y: 0, on: 0, lastRip: 0 }, ripples = [];
+      var W = 0, H = 0, LW = 0, LH = 0, img = null, t = 0, running = false, raf = 0, last = 0, frame = 0;
+      var ptr = { x: 0, y: 0, on: 0, lastRip: 0, u: 0, su: 0, v: 0, sv: 0 }, ripples = [];
+      var K = 5.5, LANE = 2.2, TILE = 1.1, SPEED = 0.7;
       var hexRgb = function (hex) {
         hex = hex.trim();
         if (hex.charAt(0) !== "#") return null;
         if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
       };
-      var size3 = function () {
+      var size = function () {
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
-        W3 = c3.clientWidth; H3 = c3.clientHeight;
-        c3.width = W3 * dpr; c3.height = H3 * dpr;
+        W = cv.clientWidth; H = cv.clientHeight;
+        cv.width = W * dpr; cv.height = H * dpr;
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
-        LW = Math.max(40, Math.ceil(W3 / 5)); LH = Math.max(30, Math.ceil(H3 / 5));
+        LW = Math.max(60, Math.ceil(W / 4)); LH = Math.max(40, Math.ceil(H / 4));
         lo.width = LW; lo.height = LH;
         img = lg.createImageData(LW, LH);
       };
-      var caustics = function (rgb) {
-        var d = img.data, hy = LH * 0.2, cx = LW * 0.55;
-        for (var py = 0; py < LH; py++) {
-          var yn = (py - hy) / (LH - hy);
-          for (var px = 0; px < LW; px++) {
-            var i = (py * LW + px) * 4;
-            if (yn <= 0.02) { d[i + 3] = 0; continue; }
-            var z = 1 / (yn + 0.12);
-            var fx = (px - cx) / LW * z * 5.5, fz = z * 3.2;
-            var s1 = Math.sin(fx * 1.1 + 1.7 * Math.sin(fz * 0.8 + t3 * 0.7));
-            var s2 = Math.sin(fz * 1.3 + 1.5 * Math.sin(fx * 0.7 - t3 * 0.6));
-            var v = 1 - Math.abs(Math.sin(s1 * 2.1 + s2 * 2.1));
-            v = v * v * v * v;
-            var fade = Math.min(1, yn * 2.2);
+      var floor = function (rgb, cxL, hyL, camZ) {
+        var d = img.data, rl = ripples.length, py, px, i, r;
+        for (py = 0; py < LH; py++) {
+          var yn = (py - hyL) / (LH - hyL);
+          if (yn <= 0.03) { for (px = 0; px < LW; px++) d[(py * LW + px) * 4 + 3] = 0; continue; }
+          var z = 1 / yn, fade = Math.min(1, (yn - 0.03) * 4.5), cl = Math.max(0.15, Math.min(1, 1.5 - z * 0.14));
+          var wTile = 0.035 + 0.012 * z, wMark = 0.1 + 0.014 * z;
+          for (px = 0; px < LW; px++) {
+            i = (py * LW + px) * 4;
+            var fx = (px - cxL) / LW * z * K, fz = z * 2 + camZ;
+            var ox = 0.16 * Math.sin(fz * 1.3 + t + fx * 0.7) + 0.08 * Math.sin(fx * 2.1 - t * 0.7 + fz * 0.4);
+            var oz = 0.16 * Math.cos(fx * 1.1 + t * 0.8 + fz * 0.9);
+            for (r = 0; r < rl; r++) {
+              var rp = ripples[r], dx = px - rp.x, dy = (py - rp.y) * 2.6, dd = Math.sqrt(dx * dx + dy * dy);
+              var wv = Math.exp(-Math.pow((dd - rp.r) / 5, 2)) * rp.a;
+              ox += wv * 0.35 * Math.sin(dd * 0.9); oz += wv * 0.35 * Math.cos(dd * 0.9);
+            }
+            var X = fx + ox, Z = fz + oz;
+            var ft = X / TILE, ft2 = Z / TILE;
+            var dX = Math.abs(ft - Math.round(ft)) * TILE, dZ = Math.abs(ft2 - Math.round(ft2)) * TILE;
+            var tile = Math.max(0, 1 - Math.min(dX, dZ) / wTile);
+            var fl = X / LANE, lr = Math.round(fl);
+            var mark = Math.abs(lr) <= 2 ? Math.max(0, 1 - Math.abs(fl - lr) * LANE / wMark) : 0;
+            var s1 = Math.sin(X * 2.6 + 1.7 * Math.sin(Z * 2.1 + t * 0.7));
+            var s2 = Math.sin(Z * 3.1 + 1.5 * Math.sin(X * 1.7 - t * 0.6));
+            var c = 1 - Math.abs(Math.sin(s1 * 2.1 + s2 * 2.1)); c = c * c * c * c * c * c * cl;
+            var a = fade * (0.05 + tile * 0.42 + mark * 0.5 + c * 0.55);
             d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2];
-            d[i + 3] = Math.min(255, v * fade * 230);
+            d[i + 3] = a > 1 ? 255 : a * 255;
           }
         }
         lg.putImageData(img, 0, 0);
       };
-      var draw3 = function (ts) {
-        var dt = last3 ? Math.min(0.05, (ts - last3) / 1000) : 0.016; last3 = ts;
-        t3 += dt; frameN++;
+      var draw = function (ts) {
+        var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
+        t += dt; frame++;
         var cs = getComputedStyle(root);
         var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
         var strong = hexRgb(cs.getPropertyValue("--text-strong")) || [255, 255, 255];
-        if (frameN % 2 === 0 || frameN === 1) caustics(dot);
-        g.clearRect(0, 0, W3, H3);
-        var hy = H3 * 0.2, cx = W3 * 0.55;
-        // floor light
-        var fl = g.createLinearGradient(0, hy, 0, H3);
-        fl.addColorStop(0, "rgba(" + dot + ",0)"); fl.addColorStop(1, "rgba(" + dot + ",0.14)");
-        g.fillStyle = fl; g.fillRect(0, hy, W3, H3 - hy);
+        var light = strong[0] < 128;
+        ptr.su += (ptr.u - ptr.su) * 0.04; ptr.sv += (ptr.v - ptr.sv) * 0.04;
+        var cx = W * 0.55 + ptr.su * W * 0.05 + Math.sin(t * 0.3) * W * 0.015;
+        var hy = H * 0.2 + ptr.sv * H * 0.025 + Math.sin(t * 0.45) * H * 0.008;
+        var camZ = t * SPEED, k, i;
+        if (frame % 2 === 0 || frame === 1) {
+          for (i = ripples.length - 1; i >= 0; i--) { ripples[i].r += 0.9; ripples[i].a *= 0.965; if (ripples[i].a < 0.04) ripples.splice(i, 1); }
+          floor(light ? [255, 255, 255] : dot, cx * LW / W, hy * LH / H, camZ);
+        }
+        g.clearRect(0, 0, W, H);
+        var gr = g.createLinearGradient(0, hy, 0, H);
+        gr.addColorStop(0, "rgba(" + dot + ",0.0)"); gr.addColorStop(0.35, "rgba(" + dot + "," + (light ? 0.3 : 0.06) + ")"); gr.addColorStop(1, "rgba(" + dot + "," + (light ? 0.55 : 0.16) + ")");
+        g.fillStyle = gr; g.fillRect(0, hy, W, H - hy);
+        // far wall glow
+        var wl = g.createLinearGradient(0, hy - H * 0.05, 0, hy + H * 0.06);
+        wl.addColorStop(0, "rgba(" + dot + ",0)"); wl.addColorStop(0.5, "rgba(" + (light ? "255,255,255" : dot) + "," + (light ? 0.55 : 0.22) + ")"); wl.addColorStop(1, "rgba(" + dot + ",0)");
+        g.fillStyle = wl; g.fillRect(0, hy - H * 0.05, W, H * 0.11);
         g.imageSmoothingEnabled = true;
-        g.globalAlpha = 0.9; g.drawImage(lo, 0, 0, W3, H3); g.globalAlpha = 1;
-        // lane ropes with buoys
-        var lanes = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5], zMax = 16, i, k;
-        for (k = 0; k < lanes.length; k++) {
-          var u = lanes[k];
+        g.drawImage(lo, 0, 0, W, H);
+
+        // lane ropes with buoys that stream toward the viewer
+        var ropes = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5], zMax = 16, PER = 1.2, NB = 26;
+        for (k = 0; k < ropes.length; k++) {
+          var u = ropes[k], zz;
           g.beginPath();
-          for (var zz = zMax; zz >= 1; zz -= 0.25) {
+          for (zz = zMax; zz >= 1; zz -= 0.25) {
             var s = 1 / zz;
-            var sway = Math.sin(zz * 1.7 + t3 * 1.2 + k) * 3 * s;
-            var px2 = cx + u * W3 * 0.4 * s + sway, py2 = hy + (H3 * 1.02 - hy) * s;
-            if (zz === zMax) g.moveTo(px2, py2); else g.lineTo(px2, py2);
+            var rx = cx + u * W * 0.4 * s + Math.sin(zz * 1.7 + t * 1.2 + k) * 2.5 * s, ry = hy + (H - hy) * s;
+            if (zz === zMax) g.moveTo(rx, ry); else g.lineTo(rx, ry);
           }
-          g.strokeStyle = "rgba(" + dot + ",0.45)"; g.lineWidth = 1.4; g.stroke();
-          for (i = 0; i < 26; i++) {
-            var z2 = 1 + i * 0.6;
-            if (z2 > zMax) break;
+          g.strokeStyle = light ? "rgba(255,255,255,0.7)" : "rgba(" + dot + ",0.4)"; g.lineWidth = light ? 1.6 : 1.3; g.stroke();
+          for (i = 0; i < NB; i++) {
+            var dz = (((i * PER - camZ * 1) % (NB * PER)) + NB * PER) % (NB * PER);
+            var z2 = 1 + dz / 2;
+            if (z2 > zMax) continue;
             var s2 = 1 / z2;
-            var bx = cx + u * W3 * 0.4 * s2 + Math.sin(z2 * 1.7 + t3 * 1.2 + k) * 3 * s2;
-            var by = hy + (H3 * 1.02 - hy) * s2 + Math.sin(t3 * 2 + i + k) * 1.5 * s2;
-            var br = Math.max(1, 7 * s2);
-            var a = Math.min(1, 1.2 - z2 / zMax);
-            g.beginPath(); g.ellipse(bx, by, br, br * 0.7, 0, 0, Math.PI * 2);
-            g.fillStyle = (i % 2 ? "rgba(" + dot + "," : "rgba(" + strong + ",") + (0.85 * a).toFixed(2) + ")";
+            var bx = cx + u * W * 0.4 * s2 + Math.sin(z2 * 1.7 + t * 1.2 + k) * 2.5 * s2;
+            var by = hy + (H - hy) * s2 + Math.sin(t * 2 + i + k) * 1.2 * s2;
+            var br = Math.max(1.2, 6.5 * s2), al = Math.min(1, 1.25 - z2 / zMax) * Math.min(1, (z2 - 1) * 3 + 0.2);
+            var warm = (i % 2) === 0;
+            g.beginPath(); g.ellipse(bx, by, br, br * 0.72, 0, 0, Math.PI * 2);
+            g.fillStyle = warm ? "rgba(" + (light ? "249,115,22" : strong) + "," + (0.9 * al).toFixed(2) + ")" : "rgba(" + (light ? "255,255,255" : dot) + "," + (0.9 * al).toFixed(2) + ")";
             g.fill();
+            g.beginPath(); g.ellipse(bx - br * 0.3, by - br * 0.3, br * 0.3, br * 0.2, 0, 0, Math.PI * 2);
+            g.fillStyle = "rgba(255,255,255," + (0.5 * al).toFixed(2) + ")"; g.fill();
+            g.beginPath(); g.ellipse(bx, by + br * 1.1, br * 0.9, br * 0.25, 0, 0, Math.PI * 2);
+            g.fillStyle = "rgba(" + dot + "," + (0.25 * al).toFixed(2) + ")"; g.fill();
           }
         }
-        // cursor ripples
-        if (ptr.on && ts - ptr.lastRip > 140) { ripples.push({ x: ptr.x, y: ptr.y, r: 0 }); ptr.lastRip = ts; ptr.on = 0; }
-        for (i = ripples.length - 1; i >= 0; i--) {
-          var rp = ripples[i]; rp.r += dt * 70;
-          var ra = 1 - rp.r / 120;
-          if (ra <= 0) { ripples.splice(i, 1); continue; }
-          g.beginPath(); g.ellipse(rp.x, rp.y, rp.r, rp.r * 0.35, 0, 0, Math.PI * 2);
-          g.strokeStyle = "rgba(" + strong + "," + (0.5 * ra).toFixed(2) + ")"; g.lineWidth = 1.2; g.stroke();
-        }
-        raf3 = requestAnimationFrame(draw3);
+        raf = requestAnimationFrame(draw);
       };
-      size3();
-      window.addEventListener("resize", size3);
-      c3.parentElement.addEventListener("pointermove", function (e) {
-        var r = c3.getBoundingClientRect();
+      size();
+      window.addEventListener("resize", size);
+      cv.parentElement.addEventListener("pointermove", function (e) {
+        var r = cv.getBoundingClientRect();
+        ptr.u = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+        ptr.v = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
         if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-        ptr.x = e.clientX - r.left; ptr.y = e.clientY - r.top; ptr.on = 1;
+        var now = performance.now();
+        if (now - ptr.lastRip > 220 && ripples.length < 5) {
+          ripples.push({ x: (e.clientX - r.left) / r.width * LW, y: (e.clientY - r.top) / r.height * LH, r: 0, a: 1 });
+          ptr.lastRip = now;
+        }
       });
       if (reduceMotion.matches) {
-        t3 = 2; draw3(performance.now()); cancelAnimationFrame(raf3);
+        t = 3; draw(performance.now()); cancelAnimationFrame(raf);
       } else if ("IntersectionObserver" in window) {
         new IntersectionObserver(function (en) {
-          if (en[0].isIntersecting) { if (!run3) { run3 = true; last3 = 0; raf3 = requestAnimationFrame(draw3); } }
-          else { run3 = false; cancelAnimationFrame(raf3); }
-        }).observe(c3);
-      } else { run3 = true; raf3 = requestAnimationFrame(draw3); }
-    }
+          if (en[0].isIntersecting) { if (!running) { running = true; last = 0; raf = requestAnimationFrame(draw); } }
+          else { running = false; cancelAnimationFrame(raf); }
+        }).observe(cv);
+      } else { running = true; raf = requestAnimationFrame(draw); }
+    })();
+
+    /* ---------- Water-surface section edges ---------- */
+    (function () {
+      var edges = [].slice.call(document.querySelectorAll(".wave-edge"));
+      if (!edges.length) return;
+      var parseTint = function (v) {
+        var m = (v || "").match(/[\d.]+/g);
+        return m && m.length >= 3 ? [+m[0], +m[1], +m[2], m.length > 3 ? +m[3] : 1] : [150, 210, 240, 0.05];
+      };
+      var hexRgb = function (hex) {
+        hex = hex.trim();
+        if (hex.charAt(0) !== "#") return [8, 32, 48];
+        if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+        return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
+      };
+      var st = edges.map(function (cv, n) {
+        var lo = document.createElement("canvas");
+        return { cv: cv, g: cv.getContext("2d"), lo: lo, lg: lo.getContext("2d"), n: n, vis: false, W: 0, H: 0, img: null };
+      });
+      var size = function () {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        st.forEach(function (e) {
+          e.W = e.cv.clientWidth; e.H = e.cv.clientHeight;
+          e.cv.width = e.W * dpr; e.cv.height = e.H * dpr;
+          e.g.setTransform(dpr, 0, 0, dpr, 0, 0);
+          e.lw = Math.max(40, Math.ceil(e.W / 4)); e.lh = Math.max(12, Math.ceil(e.H / 4));
+          e.lo.width = e.lw; e.lo.height = e.lh;
+          e.img = e.lg.createImageData(e.lw, e.lh);
+        });
+      };
+      var surf = function (x, t, n) {
+        var q = x + n * 317;
+        return 9 * Math.sin(q * 0.008 + t * 0.7) + 5 * Math.sin(q * 0.021 - t * 1.1) + 2.5 * Math.sin(q * 0.05 + t * 1.9) + 1.2 * Math.sin(q * 0.11 - t * 2.6);
+      };
+      var drawEdge = function (e, t, alt, altA, lightMode, dot) {
+        var g = e.g, W = e.W, H = e.H, base = H * 0.55, x, y;
+        g.clearRect(0, 0, W, H);
+        var d = e.img.data, sx = W / e.lw, sy = H / e.lh;
+        for (var ly = 0; ly < e.lh; ly++) {
+          for (var lx = 0; lx < e.lw; lx++) {
+            var i = (ly * e.lw + lx) * 4, px = lx * sx, py = ly * sy;
+            var dep = (py - (base + surf(px, t, e.n))) / H;
+            if (dep < 0) { d[i + 3] = 0; continue; }
+            var fade = Math.exp(-dep * 6.5);
+            var s1 = Math.sin(px * 0.045 + 1.5 * Math.sin(py * 0.11 + t * 0.8 + e.n));
+            var s2 = Math.sin(py * 0.14 + 1.3 * Math.sin(px * 0.037 - t * 0.7));
+            var c = 1 - Math.abs(Math.sin(s1 * 2 + s2 * 2)); c = c * c * c * c * c;
+            var col = lightMode ? [255, 255, 255] : dot;
+            d[i] = col[0]; d[i + 1] = col[1]; d[i + 2] = col[2];
+            d[i + 3] = Math.min(255, c * fade * (lightMode ? 255 : 200));
+          }
+        }
+        e.lg.putImageData(e.img, 0, 0);
+        // water body below the surface, with a feathered edge instead of a hard line
+        var body = function (dy) {
+          g.beginPath();
+          g.moveTo(0, H + 10);
+          for (x = 0; x <= W; x += 6) g.lineTo(x, base + surf(x, t, e.n) + dy);
+          g.lineTo(W, H + 10); g.closePath();
+        };
+        g.fillStyle = "rgb(" + alt + ")";
+        g.strokeStyle = "rgb(" + alt + ")"; g.lineJoin = "round";
+        var widths = [20, 13, 7];
+        for (var fi = 0; fi < widths.length; fi++) {
+          g.beginPath();
+          for (x = 0; x <= W; x += 6) { y = base + surf(x, t, e.n) - widths[fi] * 0.25; if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+          g.lineWidth = widths[fi]; g.globalAlpha = 0.12 * altA; g.stroke();
+        }
+        g.globalAlpha = altA;
+        g.save();
+        body(0); g.fill(); g.globalAlpha = 1; g.clip();
+        g.imageSmoothingEnabled = true;
+        g.drawImage(e.lo, 0, 0, W, H);
+        g.restore();
+        // a soft sheen along the wave, no crisp line
+        var sheen = lightMode ? [255, 255, 255] : [190, 235, 255];
+        g.beginPath();
+        for (x = 0; x <= W; x += 6) { y = base + surf(x, t, e.n); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+        g.lineWidth = 14; g.lineJoin = "round"; g.strokeStyle = "rgba(" + sheen + "," + (lightMode ? 0.28 : 0.07) + ")"; g.stroke();
+        g.lineWidth = 6; g.strokeStyle = "rgba(" + sheen + "," + (lightMode ? 0.4 : 0.09) + ")"; g.stroke();
+      };
+      var alt = "8,32,48", running = false, raf = 0, t0 = 0;
+      var frame = function (ts) {
+        var t = ts / 1000;
+        var cs = getComputedStyle(root);
+        var a = parseTint(cs.getPropertyValue("--alt-tint"));
+        alt = a.slice(0, 3).join(",");
+        var sg = hexRgb(cs.getPropertyValue("--text-strong"));
+        var lightMode = (sg[0] + sg[1] + sg[2]) / 3 < 128;
+        var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
+        var any = false;
+        st.forEach(function (e) { if (e.vis) { any = true; drawEdge(e, t, alt, a[3], lightMode, dot); } });
+        if (any) raf = requestAnimationFrame(frame); else running = false;
+      };
+      var kick = function () { if (!running) { running = true; raf = requestAnimationFrame(frame); } };
+      size();
+      window.addEventListener("resize", size);
+      if (reduceMotion.matches || !("IntersectionObserver" in window)) {
+        var cs0 = getComputedStyle(root);
+        var a0 = parseTint(cs0.getPropertyValue("--alt-tint")), sg0 = hexRgb(cs0.getPropertyValue("--text-strong"));
+        st.forEach(function (e) { drawEdge(e, 2, a0.slice(0, 3).join(","), a0[3], (sg0[0] + sg0[1] + sg0[2]) / 3 < 128, (cs0.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number)); });
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (en) {
+            st.forEach(function (e) { if (e.cv === en.target) e.vis = en.isIntersecting; });
+          });
+          kick();
+        }, { rootMargin: "100px" });
+        st.forEach(function (e) { io.observe(e.cv); });
+      }
+    })();
+
+    /* ---------- Breathing bubbles ---------- */
+    (function () {
+      var cv = document.getElementById("bubbles");
+      if (!cv || !cv.getContext || reduceMotion.matches) return;
+      var g = cv.getContext("2d"), W = 0, H = 0, bubbles = [], raf = 0, last = 0, t = 0;
+      var mk = function (initial) {
+        var r = 3 + Math.pow(Math.random(), 2.2) * 16;
+        return {
+          x: Math.random() * W, y: initial ? Math.random() * H : H + r + Math.random() * 120, r: r,
+          vy: 14 + r * 2.6 + Math.random() * 8, ph: Math.random() * 6.28, br: 0.5 + Math.random() * 0.7, wob: 6 + Math.random() * 14,
+          a: 0.35 + Math.random() * 0.4
+        };
+      };
+      var resize = function () {
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth; H = window.innerHeight;
+        cv.width = W * dpr; cv.height = H * dpr;
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        var n = W < 700 ? 14 : 26;
+        while (bubbles.length < n) bubbles.push(mk(true));
+        bubbles.length = n;
+      };
+      var frame = function (ts) {
+        var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts; t += dt;
+        var cs = getComputedStyle(document.documentElement);
+        var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
+        var lightMode = dot[0] < 100;
+        g.clearRect(0, 0, W, H);
+        for (var i = 0; i < bubbles.length; i++) {
+          var b = bubbles[i];
+          b.y -= b.vy * dt;
+          if (b.y < -b.r * 2) { bubbles[i] = mk(false); continue; }
+          var x = b.x + Math.sin(t * 0.8 + b.ph) * b.wob;
+          var breathe = 1 + 0.1 * Math.sin(t * b.br * 2 + b.ph);
+          var r = b.r * breathe;
+          var fadeTop = Math.min(1, b.y / (H * 0.25) + 0.2);
+          var al = b.a * fadeTop;
+          var grd = g.createRadialGradient(x, b.y, r * 0.55, x, b.y, r);
+          grd.addColorStop(0, "rgba(" + dot + ",0)");
+          grd.addColorStop(1, "rgba(" + dot + "," + (0.22 * al).toFixed(3) + ")");
+          g.beginPath(); g.arc(x, b.y, r, 0, Math.PI * 2); g.fillStyle = grd; g.fill();
+          g.lineWidth = 1; g.strokeStyle = "rgba(" + dot + "," + (0.55 * al).toFixed(3) + ")"; g.stroke();
+          g.beginPath(); g.arc(x - r * 0.38, b.y - r * 0.38, r * 0.34, Math.PI * 1.05, Math.PI * 1.75);
+          g.lineWidth = Math.max(1, r * 0.1); g.lineCap = "round";
+          g.strokeStyle = lightMode ? "rgba(255,255,255," + (0.9 * al).toFixed(3) + ")" : "rgba(255,255,255," + (0.8 * al).toFixed(3) + ")"; g.stroke();
+          g.beginPath(); g.arc(x + r * 0.42, b.y + r * 0.42, r * 0.16, Math.PI * 0.05, Math.PI * 0.6);
+          g.lineWidth = 1; g.strokeStyle = "rgba(" + dot + "," + (0.35 * al).toFixed(3) + ")"; g.stroke();
+        }
+        raf = requestAnimationFrame(frame);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      document.addEventListener("visibilitychange", function () {
+        if (document.hidden) cancelAnimationFrame(raf); else { last = 0; raf = requestAnimationFrame(frame); }
+      });
+      raf = requestAnimationFrame(frame);
+    })();
 
     /* ---------- 3D card tilt ---------- */
     if (!reduceMotion.matches && window.matchMedia("(hover: hover)").matches) {
