@@ -294,7 +294,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 :root[data-theme="light"] .nav-menu { --dock-bg: rgba(70, 160, 210, 0.14); --dock-edge: rgba(255, 255, 255, 0.5); --dock-hi: rgba(255, 255, 255, 0.34); background-image: linear-gradient(160deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0.06) 45%, rgba(255, 255, 255, 0.16) 100%); -webkit-backdrop-filter: blur(22px) saturate(190%) brightness(1.04); backdrop-filter: blur(22px) saturate(190%) brightness(1.04); box-shadow: 0 12px 32px rgba(8, 60, 110, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 -1px 0 rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
 @media (max-width: 899.98px) {
   .nav-menu li { flex: 1 1 0; min-width: 0; transition: flex-grow var(--t); }
-  .nav-menu li:has(> .active) { flex-grow: 2; }
+  .nav-menu li:has(> .active) { flex: 2 1 0; }
   .nav-link:not(.active) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .nav-link:not(.active) { padding: 12px 0 16px; }
 }
@@ -1020,22 +1020,40 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .impact-number, .depth-val, .swim-big { font-variant-numeric: tabular-nums; }
 
 /* ===== Large screens: vertical dock on the left ===== */
-@media (min-width: 1200px) and (min-height: 640px) {
+/* Side dock whenever the screen is wider than it is tall.
+   It runs the full height between the top nav and the bottom of the
+   viewport, with the sections spread evenly along it. */
+@media (orientation: landscape) {
   body { padding-bottom: 0; }
   .nav-menu {
-    left: 20px;
+    top: calc(var(--nav-h) + 16px);
+    bottom: 16px;
+    left: 16px;
     right: auto;
-    top: 50%;
-    bottom: auto;
     width: max-content;
     max-width: none;
     flex-direction: column;
+    justify-content: space-evenly;
     gap: 4px;
     padding: 8px;
     border-radius: 32px;
-    transform: translateY(-50%);
+    transform: none;
   }
-  .nav-link, .nav-link:not(.active) { min-width: 84px; padding: 10px 8px 8px; }
+  /* Like the bottom bar on its side: equal slots, the selected one twice as
+     tall, and its highlight fills the slot. */
+  .nav-menu li { flex: 1 1 0; min-height: 0; display: flex; transition: flex-grow var(--t); }
+  .nav-menu li:has(> .active) { flex: 2 1 0; }
+  .nav-link, .nav-link:not(.active) { flex: 1; justify-content: center; min-width: 84px; padding: 8px; }
+  .nav-link:not(.active) span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  /* Keep page content clear of the dock (16px edge + 116px dock + 20px gap);
+     on wide screens the centered margin already covers it. */
+  main .container { padding-left: max(1.25rem, calc(136px - (100vw - var(--container)) / 2)); }
+}
+/* Short landscape screens (phones turned sideways): icons only so all fit */
+@media (orientation: landscape) and (max-height: 560px) {
+  .nav-link, .nav-link:not(.active) { min-width: 64px; padding: 6px 8px; }
+  .nav-link svg { width: 20px; height: 20px; }
+  main .container { padding-left: max(1.25rem, calc(116px - (100vw - var(--container)) / 2)); }
 }
 
 /* ===== Back to the surface button ===== */
