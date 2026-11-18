@@ -21,7 +21,7 @@ assets/img/           favicon.svg, og-image.svg
 - **Typing phrases:** the `phrases` array in `assets/js/main.js`.
 - **Colors / theme:** the CSS variables at the top of `assets/css/styles.css`.
 - **Impact numbers:** `data-target` / `data-suffix` attributes on `.impact-number` elements.
-- **Download CV button:** add a PDF **without personal phone number** at `assets/Michel_Abdelmalek_CV_public.pdf`. The button appears automatically when the file exists. `.gitignore` blocks all other PDFs.
+- **Download CV button:** add the public CV PDF at `assets/Michel_Abdelmalek_CV_public.pdf`. The button appears automatically when the file exists. `.gitignore` blocks all other PDFs.
 - **Social preview image:** most platforms need a PNG. Export `assets/img/og-image.svg` as a 1200x630 `assets/img/og-image.png`, which the meta tags reference.
 
 The page uses a strict Content Security Policy, so do not add inline `<script>`, `<style>`, `style="..."` or `onclick="..."`. Put code in the `assets/` files.
