@@ -298,13 +298,35 @@
         <h2 id="proj-h" class="section-title reveal">Projects</h2>
         <div class="projects-list">
           <article class="project-row glass reveal">
+            <div class="project-preview p0" aria-hidden="true">
+              <div class="pv-bar"><i></i><i></i><i></i><span><img class="pv-fav" src="assets/img/projects/sse-lock.svg" alt="" width="24" height="24">michelabdelmalek.github.io/sse-record-locking-demo</span></div>
+              <picture>
+                <source media="(prefers-reduced-motion: reduce)" srcset="assets/img/projects/sse-lock-demo-still.webp">
+                <img class="pv-shot" src="assets/img/projects/sse-lock-demo.gif" alt="" width="960" height="540" loading="lazy">
+              </picture>
+              <span class="pv-shine"></span>
+            </div>
+            <div class="project-info">
+              <span class="project-num" aria-hidden="true">01</span>
+              <span class="project-kicker">Open source · Live demo</span>
+              <h3 class="project-title"><a class="project-link-stretch" href="https://michelabdelmalek.github.io/sse-record-locking-demo/" target="_blank" rel="noopener noreferrer">SSE record locking<span class="sr-only"> (opens in a new tab)</span></a></h3>
+              <p class="project-desc">A public rebuild, from scratch, of the record-locking pattern I own at Transflo. Each browser tab holds its lock over Server-Sent Events, another editor can take it over, and the displaced tab is warned at once and blocked from saving. Lock rules run in Postgres, so they hold across API instances; integration-tested with Testcontainers and shipped with Docker and GitHub Actions.</p>
+              <ul class="skill-chips project-stack"><li class="chip">.NET 10</li><li class="chip">EF Core</li><li class="chip">PostgreSQL</li><li class="chip">SSE</li><li class="chip">Angular</li><li class="chip">PrimeNG</li><li class="chip">Docker</li><li class="chip">GitHub Actions</li></ul>
+              <div class="project-actions">
+                <span class="project-cta" aria-hidden="true">Live demo <span class="arrow">&#8599;</span></span>
+                <a class="project-code-link" href="https://github.com/MichelAbdelmalek/sse-record-locking-demo" target="_blank" rel="noopener noreferrer">Code on GitHub<span class="sr-only"> (opens in a new tab)</span> <span aria-hidden="true">&#8599;</span></a>
+              </div>
+              <p class="project-note">Free hosting: the first load can take about a minute while the API wakes up.</p>
+            </div>
+          </article>
+          <article class="project-row glass reveal">
             <div class="project-preview p1" aria-hidden="true">
               <div class="pv-bar"><i></i><i></i><i></i><span><img class="pv-fav dark" src="assets/img/projects/avance-digital.svg" alt="" width="195" height="42">avancedigitalsolutions.com</span></div>
               <img class="pv-shot" src="assets/img/projects/avance-preview.webp" alt="" width="2000" height="1162" loading="lazy">
               <span class="pv-shine"></span>
             </div>
             <div class="project-info">
-              <span class="project-num" aria-hidden="true">01</span>
+              <span class="project-num" aria-hidden="true">02</span>
               <span class="project-kicker">Freelance · SwiftX</span>
               <h3 class="project-title"><a class="project-link-stretch" href="https://www.avancedigitalsolutions.com/" target="_blank" rel="noopener noreferrer">Avance Digital<span class="sr-only"> (opens in a new tab)</span></a></h3>
               <p class="project-desc">Website for a content and video-production agency serving tennis clubs, tournaments and brands. Built as a freelance engineer at SwiftX with Next.js, Mailgun and AWS S3, deployed on Vercel.</p>
@@ -319,7 +341,7 @@
               <span class="pv-shine"></span>
             </div>
             <div class="project-info">
-              <span class="project-num" aria-hidden="true">02</span>
+              <span class="project-num" aria-hidden="true">03</span>
               <span class="project-kicker">Softxpert</span>
               <h3 class="project-title"><a class="project-link-stretch" href="https://www.postscanmail.com/" target="_blank" rel="noopener noreferrer">PostScanMail (PSM)<span class="sr-only"> (opens in a new tab)</span></a></h3>
               <p class="project-desc">Digital mailroom service to receive, scan, forward and manage mail online with real U.S. street addresses. At Softxpert I cut slow MySQL query times from ~7 s to ~0.4 s (~17x faster) and integrated the Recurly and USAePay payment gateways.</p>
@@ -334,7 +356,7 @@
               <span class="pv-shine"></span>
             </div>
             <div class="project-info">
-              <span class="project-num" aria-hidden="true">03</span>
+              <span class="project-num" aria-hidden="true">04</span>
               <span class="project-kicker">Softxpert</span>
               <h3 class="project-title"><a class="project-link-stretch" href="https://www.certifixlivescan.com/" target="_blank" rel="noopener noreferrer">Certifix Live Scan<span class="sr-only"> (opens in a new tab)</span></a></h3>
               <p class="project-desc">Nationwide fingerprinting service site for Live Scan submissions, FBI background checks and FD-258 fingerprint cards, with a find-a-location search. Built during my time at Softxpert.</p>
@@ -343,7 +365,7 @@
             </div>
           </article>
         </div>
-        <p class="projects-note reveal">My current work at Transflo is private, so it is not on GitHub. The repos below are early personal projects. I am happy to walk through the Transflo architecture and the measurements in an interview.</p>
+        <p class="projects-note reveal">My Transflo code is private, so the first project above is a public rebuild of its record-locking pattern. The repos below are early personal projects. I am happy to walk through the Transflo architecture and the measurements in an interview.</p>
         <h3 class="subsection-title reveal">Early personal projects</h3>
         <div class="repo-grid">
           <article class="repo-card glass reveal">
