@@ -78,7 +78,7 @@
         <div class="about-layout">
         <div class="about-text reveal">
           <p>I'm a full stack engineer with <strong>5+ years</strong> of experience, mostly on microservices and event-driven backends in AWS, with Angular on the front.</p>
-          <p>For <strong>3+ years</strong> I've worked remotely for a US company. I helped build its multi-tenant AWS platform from the first commit, made APIs <strong>10x faster</strong> and queries <strong>17x faster</strong>, and I mentor other developers.</p>
+          <p>For <strong>3+ years</strong> I've worked remotely for a US company. I helped build its multi-tenant AWS platform from the first commit, made APIs <strong>10x faster</strong> (next-item navigation, 5 s to 500 ms) and queries <strong>17x faster</strong> (7 s to 0.4 s), and I mentor other developers.</p>
           <p>I work in <strong>C# / .NET</strong> and <strong>Java / Spring Boot</strong>. I speak French at B2 (DELF).</p>
         </div>
           <dl class="about-facts glass reveal" aria-label="At a glance">
@@ -136,18 +136,22 @@
           <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="10" data-suffix="x">10x</span>
             <span class="impact-label">Faster APIs</span>
+            <span class="impact-note">Next-item navigation, 5 s to 500 ms</span>
           </div>
           <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="17" data-suffix="x">17x</span>
             <span class="impact-label">Faster queries</span>
+            <span class="impact-note">PostScanMail, 7 s to 0.4 s</span>
           </div>
           <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="100" data-suffix="">100</span>
             <span class="impact-label">Live tenants</span>
+            <span class="impact-note">3 microservices, 4 Lambda functions</span>
           </div>
           <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="5" data-suffix="+">5+</span>
             <span class="impact-label">Years of experience</span>
+            <span class="impact-note">3+ remote for a US company</span>
           </div>
         </div>
       </div>
@@ -158,6 +162,7 @@
       <div class="container">
         <span class="section-kicker reveal" aria-hidden="true">4 m</span>
         <h2 id="exp-h" class="section-title reveal">Experience</h2>
+        <p class="exp-note reveal">The Transflo code is private. I can walk you through the architecture and the measurements behind each number in an interview.</p>
         <div class="timeline">
           <div class="timeline-progress" aria-hidden="true"></div>
 
@@ -172,7 +177,7 @@
                 <div class="timeline-meta"><span>May 2023 – Present</span><span>Tampa, Florida, USA company · Remote from Egypt</span></div>
               </div>
               <p class="timeline-summary">Built a multi-tenant AWS platform from scratch, serving 100 live tenants, and owned its real-time features end to end.</p>
-              <ul class="timeline-stats" aria-label="Key results"><li>100 live tenants</li><li>10x faster APIs</li></ul>
+              <ul class="timeline-stats" aria-label="Key results"><li>100 live tenants</li><li>10x faster APIs: 5 s to 500 ms</li></ul>
               <ul class="skill-chips timeline-stack" aria-label="Technologies"><li class="chip">.NET C#</li><li class="chip">DDD</li><li class="chip">EF Core</li><li class="chip">Angular</li><li class="chip">GraphQL</li><li class="chip">AWS ECS</li><li class="chip">Lambda</li><li class="chip">SQS/SNS</li><li class="chip">Redis</li><li class="chip">DataDog</li><li class="chip">Azure DevOps</li></ul>
               <span class="timeline-hint" aria-hidden="true"><span class="h">&#9432; Hover for all highlights</span><span class="t">&#9432; Tap for all highlights</span></span>
             </div>
@@ -202,7 +207,7 @@
                 <div class="timeline-meta"><span>June 2021 – April 2023</span><span>Alexandria, Egypt</span></div>
               </div>
               <p class="timeline-summary">Full stack on Laravel, Express.js, Angular and React; cut MySQL query times ~17x.</p>
-              <ul class="timeline-stats" aria-label="Key results"><li>17x faster queries</li></ul>
+              <ul class="timeline-stats" aria-label="Key results"><li>17x faster queries: 7 s to 0.4 s</li></ul>
               <ul class="skill-chips timeline-stack" aria-label="Technologies"><li class="chip">Laravel</li><li class="chip">Express.js</li><li class="chip">Angular</li><li class="chip">React</li><li class="chip">MySQL</li><li class="chip">Recurly</li><li class="chip">USAePay</li><li class="chip">Ubuntu</li></ul>
               <span class="timeline-hint" aria-hidden="true"><span class="h">&#9432; Hover for all highlights</span><span class="t">&#9432; Tap for all highlights</span></span>
             </div>
@@ -301,7 +306,7 @@
               </div>
               <div class="flip-face flip-back">
                 <h3>10x keyset-query speedup</h3>
-                <dl><dt>Solution</dt><dd>Replaced page-by-page in-memory scanning with a single keyset query that applies filters and lock status in the database, found using a custom load-testing tool and DataDog.</dd><dt>Result</dt><dd>~5 s down to ~500 ms: 10x faster.</dd></dl>
+                <dl><dt>Solution</dt><dd>Replaced page-by-page in-memory scanning with a single keyset query that applies filters and lock status in the database, found using a custom load-testing tool and DataDog.</dd><dt>Method</dt><dd>Seeded large data volumes with a custom load-testing tool and watched the bottleneck in DataDog.</dd><dt>Result</dt><dd>~5 s down to ~500 ms: 10x faster.</dd></dl>
               </div>
             </div>
           </article>
@@ -394,7 +399,7 @@
             </div>
           </article>
         </div>
-        <p class="projects-note reveal">My day-job work at Transflo is private, so it is not on GitHub. These are personal projects.</p>
+        <p class="projects-note reveal">My day-job work at Transflo is private, so it is not on GitHub. These are personal projects. I am happy to walk through the Transflo architecture and the measurements in an interview.</p>
         <h3 class="subsection-title reveal">More on GitHub</h3>
         <div class="repo-grid">
           <article class="repo-card glass reveal">

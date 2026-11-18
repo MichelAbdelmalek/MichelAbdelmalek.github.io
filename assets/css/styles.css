@@ -1102,3 +1102,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 /* Light mode: active dock tab as a lifted glass pill */
 :root[data-theme="light"] .nav-link.active { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px rgba(8, 60, 110, 0.12); }
 @media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .nav-link.active { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 8px rgba(8, 60, 110, 0.12); } }
+
+/* ===== Evidence notes ===== */
+.impact-note { display: block; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.8125rem; line-height: 1.4; }
+.exp-note { max-width: 40rem; margin: -1.5rem 0 2.5rem; color: var(--text-muted); }
