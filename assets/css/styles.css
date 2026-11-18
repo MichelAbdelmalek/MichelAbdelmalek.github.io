@@ -3,7 +3,7 @@
   --bg: #061620;
   --bg-alt: #082030;
   --water-deep: #04101a;
-  --page-gradient: linear-gradient(to bottom, #0b4157 0%, #083349 22%, #062538 48%, #051a2b 74%, #030f1c 100%);
+  --page-gradient: linear-gradient(to bottom, #07263a 0%, #061f31 24%, #051a2b 55%, #04121f 80%, #030f1c 100%);
   --alt-tint: rgba(150, 210, 240, 0.05);
   --ray: rgba(125, 211, 252, 0.15);
   --bg-nav: rgba(6, 22, 32, 0.78);
@@ -793,7 +793,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   transition: transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
   transform: perspective(1000px) rotateY(-6deg) rotateX(3deg);
 }
-.project-row:hover .project-preview { transform: perspective(1000px) rotateY(0) rotateX(0) scale(1.03); }
+.project-row:hover .project-preview { transform: perspective(1000px) rotateY(0) rotateX(0); }
 .project-preview.p2 { --h1: #06b6d4; --h2: #3b82f6; }
 .project-preview.p3 { --h1: #8b5cf6; --h2: #ec4899; }
 .pv-bar { display: flex; align-items: center; gap: 6px; height: 12%; padding: 0 4%; background: rgba(255, 255, 255, 0.07); }
@@ -807,7 +807,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .project-info { justify-content: center; }
   .project-cta { margin-top: 0; }
   .project-row:nth-child(even) .project-preview { order: 2; transform: perspective(1000px) rotateY(6deg) rotateX(3deg); }
-  .project-row:nth-child(even):hover .project-preview { transform: perspective(1000px) rotateY(0) rotateX(0) scale(1.03); }
+  .project-row:nth-child(even):hover .project-preview { transform: perspective(1000px) rotateY(0) rotateX(0); }
 }
 @media (prefers-reduced-motion: reduce) {
   .project-preview, .project-row:hover .project-preview { transform: none !important; }
