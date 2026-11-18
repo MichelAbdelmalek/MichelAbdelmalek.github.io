@@ -1106,3 +1106,5 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 /* ===== Evidence notes ===== */
 .impact-note { display: block; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.8125rem; line-height: 1.4; }
 .exp-note { max-width: 40rem; margin: -1.5rem 0 2.5rem; color: var(--text-muted); }
+
+.chip-earlier { border-color: var(--border); }
