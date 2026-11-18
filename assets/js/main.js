@@ -401,6 +401,23 @@
       raf = requestAnimationFrame(frame);
     })();
 
+    /* ---------- Medal: lean toward the cursor ---------- */
+    (function () {
+      var stage = document.querySelector(".medal-stage"), tilt = document.querySelector(".coin-tilt");
+      if (!stage || !tilt || reduceMotion.matches || !window.matchMedia("(hover: hover)").matches) return;
+      var area = stage.parentElement;
+      area.addEventListener("pointermove", function (e) {
+        var r = stage.getBoundingClientRect();
+        var x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width * 0.9)));
+        var y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height * 0.9)));
+        tilt.style.setProperty("--ry", (x * 18).toFixed(1) + "deg");
+        tilt.style.setProperty("--rx", (-y * 14).toFixed(1) + "deg");
+      });
+      area.addEventListener("pointerleave", function () {
+        tilt.style.setProperty("--ry", "0deg"); tilt.style.setProperty("--rx", "0deg");
+      });
+    })();
+
     /* ---------- 3D card tilt ---------- */
     if (!reduceMotion.matches && window.matchMedia("(hover: hover)").matches) {
       document.querySelectorAll(".tilt").forEach(function (el) {
