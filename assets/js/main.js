@@ -518,7 +518,7 @@
           entries.forEach(function (en) {
             if (en.isIntersecting) { en.target.classList.add("in-view"); inObs.unobserve(en.target); }
           });
-        }, { threshold: 0.08, rootMargin: "0px 0px -60px 0px" });
+        }, { threshold: 0, rootMargin: "0px 0px 25% 0px" });
         var actObs = new IntersectionObserver(function (entries) {
           entries.forEach(function (en) { en.target.classList.toggle("is-active", en.isIntersecting); });
         }, { rootMargin: "-40% 0px -40% 0px" });
@@ -560,14 +560,14 @@
         var batch = 0;
         entries.forEach(function (entry) {
           if (!entry.isIntersecting) return;
-          var target = entry.target, delay = batch * 90;
+          var target = entry.target, delay = Math.min(batch, 3) * 50;
           target.style.transitionDelay = delay + "ms";
           batch++;
           target.classList.add("revealed");
           setTimeout(function () { target.style.transitionDelay = ""; }, delay + 800);
           revealObs.unobserve(entry.target);
         });
-      }, { threshold: 0.12, rootMargin: "0px 0px -40px 0px" });
+      }, { threshold: 0, rootMargin: "0px 0px 20% 0px" });
       revealEls.forEach(function (el) { revealObs.observe(el); });
     }
 

@@ -1222,3 +1222,20 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   .swim-facts { padding-bottom: 16px; }
   .swim-facts li:nth-child(2) { position: relative; top: 16px; }
 }
+
+/* ===== Always-visible results and bullets ===== */
+.flip-card { cursor: default; }
+.flip-card:hover .flip-inner, .flip-card.is-flipped .flip-inner { transform: none; }
+.flip-front dd { margin-top: 0.25rem; }
+.flip-front dt + dd + dt { margin-top: 0.75rem; }
+.timeline-key { margin: 0 0 1rem; }
+.more-highlights { margin: 0 0 1rem; }
+.more-highlights summary { cursor: pointer; color: var(--accent-1); font-size: 0.875rem; list-style: none; padding: 0.25rem 0; }
+.more-highlights summary::-webkit-details-marker { display: none; }
+.more-highlights summary::before { content: "+ "; font-family: var(--mono); }
+.more-highlights[open] summary::before { content: "\2212  "; }
+.more-highlights .timeline-bullets { margin-top: 0.5rem; }
+/* reveal earlier and faster so sections are never blank */
+.js .reveal { transition: opacity 0.4s ease, translate 0.4s ease; }
+.js .timeline-item { transition: opacity 0.45s ease, translate 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.js .timeline-item .timeline-bullets li, .js .timeline-item .timeline-stats li, .js .timeline-item .timeline-stack .chip { opacity: 1; translate: none; transition: none; }
