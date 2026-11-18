@@ -1229,12 +1229,20 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .flip-front dd { margin-top: 0.25rem; }
 .flip-front dt + dd + dt { margin-top: 0.75rem; }
 .timeline-key { margin: 0 0 1rem; }
-.more-highlights { margin: 0 0 1rem; }
-.more-highlights summary { cursor: pointer; color: var(--accent-1); font-size: 0.875rem; list-style: none; padding: 0.25rem 0; }
-.more-highlights summary::-webkit-details-marker { display: none; }
-.more-highlights summary::before { content: "+ "; font-family: var(--mono); }
-.more-highlights[open] summary::before { content: "\2212  "; }
-.more-highlights .timeline-bullets { margin-top: 0.5rem; }
+/* one-line points that expand for detail */
+.timeline-key { gap: 0.5rem; }
+.point summary { cursor: pointer; list-style: none; border-radius: 6px; padding: 0.1rem 0; }
+.point summary::-webkit-details-marker { display: none; }
+.point summary::after {
+  content: ""; display: inline-block; width: 0.42em; height: 0.42em; margin-left: 0.55em; vertical-align: 0.18em;
+  border-right: 2px solid var(--accent-1); border-bottom: 2px solid var(--accent-1);
+  transform: rotate(45deg); transition: transform 0.2s ease;
+}
+.point details[open] summary::after { transform: rotate(-135deg); vertical-align: -0.02em; }
+.point summary:hover { color: var(--text-strong); }
+.point summary:focus-visible { outline: 2px solid var(--accent-1); outline-offset: 3px; }
+.point details p { margin: 0.35rem 0 0.25rem; color: var(--text-muted); font-size: 0.95em; line-height: 1.6; }
+@media (prefers-reduced-motion: reduce) { .point summary::after { transition: none; } }
 /* reveal earlier and faster so sections are never blank */
 .js .reveal { transition: opacity 0.4s ease, translate 0.4s ease; }
 .js .timeline-item { transition: opacity 0.45s ease, translate 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
