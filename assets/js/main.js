@@ -110,12 +110,21 @@
         if (hex.length === 4) hex = "#" + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
         return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
       };
+      var Q = 0, big = false, hyF = 0.26, cxF = 0.5;
       var size = function () {
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
         W = cv.clientWidth; H = cv.clientHeight;
-        cv.width = W * dpr; cv.height = H * dpr;
+        big = W >= 900;
+        hyF = big ? 0.26 : 0.2; cxF = big ? 0.5 : 0.55;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        if (big) {
+          if (W * H * dpr * dpr > 5200000) dpr = Math.sqrt(5200000 / (W * H));
+          if (Q === 1) dpr = Math.min(dpr, 1);
+          if (Q >= 2) dpr = Math.min(dpr, 0.75);
+        }
+        cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
-        LW = Math.max(60, Math.ceil(W / 4)); LH = Math.max(40, Math.ceil(H / 4));
+        var dv = big ? Math.max(4, Math.ceil(W / 440)) + (Q === 1 ? 2 : (Q >= 2 ? 4 : 0)) : 4;
+        LW = Math.max(60, Math.ceil(W / dv)); LH = Math.max(40, Math.ceil(H / dv));
         lo.width = LW; lo.height = LH;
         img = lg.createImageData(LW, LH);
       };
@@ -124,7 +133,7 @@
         for (py = 0; py < LH; py++) {
           var yn = (py - hyL) / (LH - hyL);
           if (yn <= 0.03) { for (px = 0; px < LW; px++) d[(py * LW + px) * 4 + 3] = 0; continue; }
-          var z = 1 / yn, fade = Math.min(1, (yn - 0.03) * 4.5), cl = Math.max(0.15, Math.min(1, 1.5 - z * 0.14));
+          var z = 1 / yn, fade = Math.min(1, (yn - 0.03) * 4.5), cl = Math.max(0.15, Math.min(1, 1.5 - z * 0.14)), tl = Math.max(0.12, 1 - z * 0.085);
           var wTile = 0.035 + 0.012 * z, wMark = 0.1 + 0.014 * z;
           for (px = 0; px < LW; px++) {
             i = (py * LW + px) * 4;
@@ -145,25 +154,33 @@
             var s1 = Math.sin(X * 2.6 + 1.7 * Math.sin(Z * 2.1 + t * 0.7));
             var s2 = Math.sin(Z * 3.1 + 1.5 * Math.sin(X * 1.7 - t * 0.6));
             var c = 1 - Math.abs(Math.sin(s1 * 2.1 + s2 * 2.1)); c = c * c * c * c * c * c * cl;
-            var a = fade * (0.05 + tile * 0.42 + mark * 0.5 + c * 0.55);
+            var a = fade * (0.05 + tile * 0.42 * tl + mark * 0.5 + c * 0.55);
             d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2];
             d[i + 3] = a > 1 ? 255 : a * 255;
           }
         }
         lg.putImageData(img, 0, 0);
       };
+      var slowSum = 0, slowN = 0, lastTs = 0;
       var draw = function (ts) {
+        if (Q >= 2 && last && ts - last < 30) { raf = requestAnimationFrame(draw); return; }
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts;
         t += dt; frame++;
+        // adaptive quality: step down once if this device draws slowly
+        if (big && Q < 2 && frame > 20) {
+          slowSum += ts - lastTs; slowN++;
+          if (slowN >= 60) { if (slowSum / slowN > 26) { Q++; size(); } slowSum = 0; slowN = 0; }
+        }
+        lastTs = ts;
         var cs = getComputedStyle(root);
         var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
         var strong = hexRgb(cs.getPropertyValue("--text-strong")) || [255, 255, 255];
         var light = strong[0] < 128;
         ptr.su += (ptr.u - ptr.su) * 0.04; ptr.sv += (ptr.v - ptr.sv) * 0.04;
-        var cx = W * 0.55 + ptr.su * W * 0.05 + Math.sin(t * 0.3) * W * 0.015;
-        var hy = H * 0.2 + ptr.sv * H * 0.025 + Math.sin(t * 0.45) * H * 0.008;
+        var cx = W * cxF + ptr.su * W * 0.05 + Math.sin(t * 0.3) * W * 0.015;
+        var hy = H * hyF + ptr.sv * H * 0.025 + Math.sin(t * 0.45) * H * 0.008;
         var camZ = t * SPEED, k, i;
-        if (frame % 2 === 0 || frame === 1) {
+        if (frame % (Q >= 1 ? 3 : 2) === 0 || frame === 1) {
           for (i = ripples.length - 1; i >= 0; i--) { ripples[i].r += 0.9; ripples[i].a *= 0.965; if (ripples[i].a < 0.04) ripples.splice(i, 1); }
           floor(light ? [255, 255, 255] : dot, cx * LW / W, hy * LH / H, camZ);
         }
@@ -178,34 +195,64 @@
         g.imageSmoothingEnabled = true;
         g.drawImage(lo, 0, 0, W, H);
 
-        // lane ropes with buoys that stream toward the viewer
-        var ropes = [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5], zMax = 16, PER = 1.2, NB = 26;
+        // lane ropes with buoys that stream toward the viewer (buoys batched into few fills)
+        var ropes = big ? [-4.5, -3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5, 4.5] : [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5], rs = big ? 0.22 : 0.4, zMax = 16, PER = 1.2, NB = 26;
+        var bands = [[[], []], [[], []], [[], []]];
+        g.beginPath();
         for (k = 0; k < ropes.length; k++) {
           var u = ropes[k], zz;
-          g.beginPath();
           for (zz = zMax; zz >= 1; zz -= 0.25) {
             var s = 1 / zz;
-            var rx = cx + u * W * 0.4 * s + Math.sin(zz * 1.7 + t * 1.2 + k) * 2.5 * s, ry = hy + (H - hy) * s;
+            var rx = cx + u * W * rs * s + Math.sin(zz * 1.7 + t * 1.2 + k) * 2.5 * s, ry = hy + (H - hy) * s;
             if (zz === zMax) g.moveTo(rx, ry); else g.lineTo(rx, ry);
           }
-          g.strokeStyle = light ? "rgba(255,255,255,0.7)" : "rgba(" + dot + ",0.4)"; g.lineWidth = light ? 1.6 : 1.3; g.stroke();
           for (i = 0; i < NB; i++) {
             var dz = (((i * PER - camZ * 1) % (NB * PER)) + NB * PER) % (NB * PER);
             var z2 = 1 + dz / 2;
             if (z2 > zMax) continue;
             var s2 = 1 / z2;
-            var bx = cx + u * W * 0.4 * s2 + Math.sin(z2 * 1.7 + t * 1.2 + k) * 2.5 * s2;
-            var by = hy + (H - hy) * s2 + Math.sin(t * 2 + i + k) * 1.2 * s2;
-            var br = Math.max(1.2, 6.5 * s2), al = Math.min(1, 1.25 - z2 / zMax) * Math.min(1, (z2 - 1) * 3 + 0.2);
-            var warm = (i % 2) === 0;
-            g.beginPath(); g.ellipse(bx, by, br, br * 0.72, 0, 0, Math.PI * 2);
-            g.fillStyle = warm ? "rgba(" + (light ? "249,115,22" : strong) + "," + (0.9 * al).toFixed(2) + ")" : "rgba(" + (light ? "255,255,255" : dot) + "," + (0.9 * al).toFixed(2) + ")";
-            g.fill();
-            g.beginPath(); g.ellipse(bx - br * 0.3, by - br * 0.3, br * 0.3, br * 0.2, 0, 0, Math.PI * 2);
-            g.fillStyle = "rgba(255,255,255," + (0.5 * al).toFixed(2) + ")"; g.fill();
-            g.beginPath(); g.ellipse(bx, by + br * 1.1, br * 0.9, br * 0.25, 0, 0, Math.PI * 2);
-            g.fillStyle = "rgba(" + dot + "," + (0.25 * al).toFixed(2) + ")"; g.fill();
+            var al = Math.min(1, 1.25 - z2 / zMax) * Math.min(1, (z2 - 1) * 3 + 0.2);
+            var band = al > 0.66 ? 2 : (al > 0.33 ? 1 : 0);
+            bands[band][i % 2].push(
+              cx + u * W * rs * s2 + Math.sin(z2 * 1.7 + t * 1.2 + k) * 2.5 * s2,
+              hy + (H - hy) * s2 + Math.sin(t * 2 + i + k) * 1.2 * s2,
+              Math.max(1.2, 6.5 * s2));
           }
+        }
+        g.strokeStyle = light ? "rgba(255,255,255,0.7)" : "rgba(" + dot + ",0.4)"; g.lineWidth = light ? 1.6 : 1.3; g.stroke();
+        var bandA = [0.3, 0.6, 0.9], q, arr, m2, pass;
+        for (q = 0; q < 3; q++) {
+          for (m2 = 0; m2 < 2; m2++) {
+            arr = bands[q][m2];
+            if (!arr.length) continue;
+            for (pass = 0; pass < 3; pass++) {
+              g.beginPath();
+              for (i = 0; i < arr.length; i += 3) {
+                var bx = arr[i], by = arr[i + 1], br = arr[i + 2];
+                if (pass === 0) { g.moveTo(bx + br, by); g.ellipse(bx, by, br, br * 0.72, 0, 0, Math.PI * 2); }
+                else if (pass === 1) { g.moveTo(bx - br * 0.3 + br * 0.3, by - br * 0.3); g.ellipse(bx - br * 0.3, by - br * 0.3, br * 0.3, br * 0.2, 0, 0, Math.PI * 2); }
+                else { g.moveTo(bx + br * 0.9, by + br * 1.1); g.ellipse(bx, by + br * 1.1, br * 0.9, br * 0.25, 0, 0, Math.PI * 2); }
+              }
+              if (pass === 0) g.fillStyle = m2 === 0 ? "rgba(" + (light ? "249,115,22" : strong) + "," + bandA[q] + ")" : "rgba(" + (light ? "255,255,255" : dot) + "," + bandA[q] + ")";
+              else if (pass === 1) g.fillStyle = "rgba(255,255,255," + (bandA[q] * 0.55).toFixed(2) + ")";
+              else g.fillStyle = "rgba(" + dot + "," + (bandA[q] * 0.28).toFixed(2) + ")";
+              g.fill();
+            }
+          }
+        }
+        // soft fades drawn on the canvas instead of a CSS mask
+        if (big) {
+        g.globalCompositeOperation = "destination-out";
+        var fl = g.createLinearGradient(0, 0, W * 0.6, 0);
+        fl.addColorStop(0, "rgba(0,0,0,0.8)"); fl.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = fl; g.fillRect(0, 0, W * 0.6, H);
+        var ft = g.createLinearGradient(0, 0, 0, H * 0.12);
+        ft.addColorStop(0, "rgba(0,0,0,1)"); ft.addColorStop(1, "rgba(0,0,0,0)");
+        g.fillStyle = ft; g.fillRect(0, 0, W, H * 0.12);
+        var fb = g.createLinearGradient(0, H * 0.86, 0, H);
+        fb.addColorStop(0, "rgba(0,0,0,0)"); fb.addColorStop(1, "rgba(0,0,0,1)");
+        g.fillStyle = fb; g.fillRect(0, H * 0.86, W, H * 0.14);
+        g.globalCompositeOperation = "source-over";
         }
         raf = requestAnimationFrame(draw);
       };
@@ -357,7 +404,7 @@
         };
       };
       var resize = function () {
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var dpr = 1;
         W = window.innerWidth; H = window.innerHeight;
         cv.width = W * dpr; cv.height = H * dpr;
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -366,6 +413,7 @@
         bubbles.length = n;
       };
       var frame = function (ts) {
+        if (last && ts - last < 30) { raf = requestAnimationFrame(frame); return; }
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts; t += dt;
         var cs = getComputedStyle(document.documentElement);
         var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
