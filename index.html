@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
   <title>Michel Abdelmalek | Senior Full Stack Engineer</title>
-  <meta name="description" content="Senior Full Stack Engineer with 5+ years in .NET C# and Angular. Built an event-driven AWS platform serving 100 tenants; made APIs 10x faster and queries 17x faster.">
+  <meta name="description" content="Senior Full Stack Engineer with 5+ years in .NET C# and Angular. Owns real-time record locking and tenant caching on a multi-tenant AWS platform serving 100 live tenants.">
   <meta name="author" content="Michel Abdelmalek">
   <meta name="theme-color" content="#061620">
   <link rel="canonical" href="https://michelabdelmalek.github.io/">
@@ -13,7 +13,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Michel Abdelmalek">
   <meta property="og:title" content="Michel Abdelmalek | Senior Full Stack Engineer">
-  <meta property="og:description" content="Full Stack .NET &amp; Angular. Distributed systems on AWS. 10x faster APIs, 17x faster queries, 100 live tenants.">
+  <meta property="og:description" content="Full Stack .NET &amp; Angular. Multi-tenant, event-driven platforms on AWS. 100 live tenants, real-time record locking, 10x faster APIs.">
   <meta property="og:url" content="https://michelabdelmalek.github.io/">
   <meta property="og:image" content="https://michelabdelmalek.github.io/assets/img/og-image.png">
   <meta property="og:image:width" content="1200">
@@ -58,7 +58,7 @@
         <h1 class="hero-name gradient-text">Michel Abdelmalek</h1>
           <p class="hero-tagline"><span id="typing-text">Senior Full Stack Engineer</span><span class="typing-cursor" aria-hidden="true"></span></p>
           <p class="hero-lead">I build multi-tenant AWS platforms in .NET and Angular, and make slow systems fast.</p>
-          <p class="hero-meta">Software engineer and swimmer · Egypt · Open to relocation · EU Blue Card eligible</p>
+          <p class="hero-meta">Software engineer and swimmer · Egypt · Open to relocation to the EU</p>
           <div class="hero-ctas">
             <a class="btn btn-primary" href="#highlights">See my work</a>
             <a class="btn btn-secondary" href="#contact">Contact</a>
@@ -76,12 +76,12 @@
         <div class="about-layout">
         <div class="about-text reveal">
           <p>I'm a full stack engineer with <strong>5+ years</strong> of experience, mostly on microservices and event-driven backends in AWS, with Angular on the front.</p>
-          <p>For <strong>3+ years</strong> I've worked remotely for a US company. I helped build its multi-tenant AWS platform from the first commit, made APIs <strong>10x faster</strong> (next-item navigation, 5 s to 500 ms) and queries <strong>17x faster</strong> (7 s to 0.4 s), and I mentor other developers.</p>
+          <p>For <strong>3+ years</strong> I've worked remotely for a US company. I helped build its multi-tenant AWS platform from the first commit, I own its <strong>real-time record locking</strong> and <strong>tenant caching</strong> end to end, our load testing caught a slow path before customers felt it (<strong>10x faster</strong>, 5 s to 500 ms), and I mentor other developers.</p>
           <p>I work in <strong>C# / .NET</strong> and <strong>Java / Spring Boot</strong>. I speak French at B2 (DELF).</p>
         </div>
           <dl class="about-facts glass reveal" aria-label="At a glance">
             <div><dt>Based in</dt><dd>Alexandria, Egypt</dd></div>
-            <div><dt>Open to</dt><dd>Relocation, EU Blue Card eligible</dd></div>
+            <div><dt>Open to</dt><dd>Relocation to the EU</dd></div>
             <div><dt>Now</dt><dd>Transflo (Tampa, USA), fully remote from Egypt</dd></div>
             <div><dt>Main stack</dt><dd>.NET, Angular, AWS</dd></div>
             <div><dt>Also</dt><dd>Java, Spring Boot, Node.js</dd></div>
@@ -91,7 +91,7 @@
         <div class="arch-card glass reveal">
           <div class="arch-copy">
             <h3>How the Transflo platform fits together</h3>
-            <p>A multi-tenant application with 3 microservices and 4 AWS Lambda functions, serving 100 live customer tenants. I was one of two senior engineers on a team of 6.</p>
+            <p>A multi-tenant application with 3 microservices and 4 AWS Lambda functions, serving 100 live customer tenants. I was one of two senior engineers on a team of 6 and owned the real-time record locking and tenant caching end to end.</p>
             <ul class="arch-points">
               <li>The GraphQL gateway handles authorization</li>
               <li>SQS and SNS with dead-letter queues carry events between services</li>
@@ -132,24 +132,24 @@
         </div>
         <div class="impact-grid" aria-label="Impact highlights">
           <div class="impact-card glass reveal">
-            <span class="impact-number gradient-text" data-target="10" data-suffix="x">10x</span>
-            <span class="impact-label">Faster APIs</span>
-            <span class="impact-note">Next-item navigation, 5 s to 500 ms</span>
-          </div>
-          <div class="impact-card glass reveal">
-            <span class="impact-number gradient-text" data-target="17" data-suffix="x">17x</span>
-            <span class="impact-label">Faster queries</span>
-            <span class="impact-note">PostScanMail, 7 s to 0.4 s</span>
-          </div>
-          <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="100" data-suffix="">100</span>
             <span class="impact-label">Live tenants</span>
             <span class="impact-note">3 microservices, 4 Lambda functions</span>
           </div>
           <div class="impact-card glass reveal">
+            <span class="impact-number gradient-text" data-target="10" data-suffix="x">10x</span>
+            <span class="impact-label">Faster APIs</span>
+            <span class="impact-note">Next-item navigation, 5 s to 500 ms</span>
+          </div>
+          <div class="impact-card glass reveal">
             <span class="impact-number gradient-text" data-target="5" data-suffix="+">5+</span>
             <span class="impact-label">Years of experience</span>
             <span class="impact-note">3+ remote for a US company</span>
+          </div>
+          <div class="impact-card glass reveal">
+            <span class="impact-number gradient-text" data-target="17" data-suffix="x">17x</span>
+            <span class="impact-label">Faster queries</span>
+            <span class="impact-note">PostScanMail, 7 s to 0.4 s</span>
           </div>
         </div>
       </div>
@@ -174,10 +174,10 @@
                 </div>
                 <div class="timeline-meta"><span>May 2023 – Present</span><span>Tampa, Florida, USA · Remote</span></div>
               </div>
-              <p class="timeline-summary">Built a multi-tenant AWS platform from scratch, serving 100 live tenants, and owned its real-time features end to end.</p>
+              <p class="timeline-summary">Core engineer on a multi-tenant AWS platform built from scratch for 100 live tenants; sole owner of its real-time record locking and tenant caching.</p>
               <ul class="timeline-stats" aria-label="Key results"><li>100 live tenants</li><li>10x faster APIs: 5 s to 500 ms</li></ul>
-              <ul class="timeline-bullets timeline-key"><li><strong>Delivery:</strong> Designed and delivered a multi-tenant AWS platform from inception (3 microservices, 4 Lambda functions) serving 100 live tenants, as one of two senior engineers on a team of 6.</li><li><strong>Real-time locking:</strong> Per-tab record locking with lock takeover over SSE, so users no longer wait on stale locks.</li><li><strong>Performance:</strong> Cut "next unlocked item" navigation from ~5 s to ~500 ms with a keyset query, found with a custom load-testing tool and DataDog.</li><li><strong>Mentoring:</strong> Onboarded new developers, defined coding and inter-service standards, and ran workshops on design patterns and database strategies.</li></ul>
-              <details class="more-highlights"><summary>More highlights</summary><ul class="timeline-bullets"><li><strong>Distributed APIs &amp; Resilience:</strong> Built REST APIs for web clients and exposed the services through the platform's GraphQL gateway, which handles authorization. Added end-to-end TraceID correlation in DataDog, plus retry policies and circuit breakers for third-party integrations.</li><li><strong>Caching:</strong> Added tenant-scoped Redis caching (cache-aside) for tenant settings read on nearly every request, with keys namespaced by tenant ID to prevent cross-tenant leaks and invalidated on every save to keep data fresh.</li><li><strong>Event-Driven Messaging:</strong> Implemented asynchronous, event-driven communication between services with AWS SQS/SNS and AWS Lambda, using dead-letter queues (DLQs) to isolate and reprocess failed messages.</li><li><strong>Cloud, DevOps &amp; Testing:</strong> Containerized and deployed services on AWS ECS with auto-scaling, managed secrets via AWS Secrets Manager, and built YAML CI/CD pipelines on Azure DevOps that build, run xUnit and Jasmine/Karma test suites, and enforce code-formatting checks.</li></ul></details>
+              <ul class="timeline-bullets timeline-key"><li><strong>Platform:</strong> Core engineer on a multi-tenant AWS application built from inception (3 .NET microservices, 4 Lambda functions), now serving 100 live tenants, as one of two senior engineers on a team of 6.</li><li><strong>Real-time locking (sole owner):</strong> Designed per-tab record locking with lock takeover over SSE: every save is validated against the current lock holder, so users take over stale locks instead of waiting, and the displaced tab is warned in real time.</li><li><strong>Load testing &amp; performance:</strong> A custom load-testing tool caught a slow "next unlocked item" path in DataDog before customers felt it; a single keyset query took it from ~5 s to ~500 ms.</li><li><strong>Tenant caching (sole owner):</strong> Designed tenant-scoped Redis cache-aside for settings read on nearly every request, namespaced per tenant and invalidated on write.</li><li><strong>Mentoring:</strong> Onboarded new developers, defined coding and inter-service standards, and ran workshops on design patterns and database strategies.</li></ul>
+              <details class="more-highlights"><summary>More highlights</summary><ul class="timeline-bullets"><li><strong>Reliability &amp; delivery:</strong> SQS/SNS and Lambda with dead-letter queues, retries and circuit breakers on third-party calls, end-to-end TraceID in DataDog; ECS auto-scaling, Secrets Manager, and Azure DevOps YAML pipelines gated on xUnit and Jasmine tests.</li></ul></details>
               <ul class="skill-chips timeline-stack" aria-label="Technologies"><li class="chip">.NET C#</li><li class="chip">DDD</li><li class="chip">EF Core</li><li class="chip">Angular</li><li class="chip">GraphQL</li><li class="chip">AWS ECS</li><li class="chip">Lambda</li><li class="chip">SQS/SNS</li><li class="chip">Redis</li><li class="chip">MongoDB</li><li class="chip">DataDog</li><li class="chip">Azure DevOps</li></ul>
             </div>
           </article>
@@ -192,9 +192,9 @@
                 </div>
                 <div class="timeline-meta"><span>June 2021 – April 2023</span><span>Alexandria, Egypt</span></div>
               </div>
-              <p class="timeline-summary">Full stack on Laravel, Express.js, Angular and React; cut MySQL query times ~17x.</p>
+              <p class="timeline-summary">Full stack on Laravel, Express.js, Angular and React: payment-gateway design and MySQL performance.</p>
               <ul class="timeline-stats" aria-label="Key results"><li>17x faster queries: 7 s to 0.4 s</li></ul>
-              <ul class="timeline-bullets timeline-key"><li><strong>Database performance (PostScanMail):</strong> Cut slow MySQL queries from ~7 s to ~0.4 s (~17x) by adding indexes and rewriting queries to remove unnecessary joins.</li><li><strong>Payments:</strong> Integrated Recurly and USAePay behind a common interface (Factory pattern), so providers can be switched without changing billing logic.</li><li><strong>Full stack:</strong> Built projects with Laravel and Express.js on the backend and Angular and React on the frontend.</li></ul>
+              <ul class="timeline-bullets timeline-key"><li><strong>Payments:</strong> Put Recurly and USAePay behind one interface (Factory pattern), so providers can be added or switched without touching billing logic.</li><li><strong>Database performance (PostScanMail):</strong> Cut slow MySQL queries from ~7 s to ~0.4 s with indexing and query rewrites.</li><li><strong>Full stack:</strong> Built projects with Laravel and Express.js on the backend and Angular and React on the frontend.</li></ul>
               <details class="more-highlights"><summary>More highlights</summary><ul class="timeline-bullets"><li><strong>Backend Optimization:</strong> Optimized backend APIs and MySQL databases, saving time and cost and improving data processing speed and resource use.</li><li><strong>Maintenance &amp; Support:</strong> Maintained and troubleshot existing applications and resolved live bugs quickly to keep downtime and user disruption minimal.</li></ul></details>
               <ul class="skill-chips timeline-stack" aria-label="Technologies"><li class="chip">Laravel</li><li class="chip">Express.js</li><li class="chip">Angular</li><li class="chip">React</li><li class="chip">MySQL</li><li class="chip">Recurly</li><li class="chip">USAePay</li><li class="chip">Ubuntu</li></ul>
             </div>
@@ -268,17 +268,6 @@
             </div>
           </article>
 
-          <article class="flip-card reveal" aria-label="17x MySQL speedup">
-            <div class="flip-inner">
-              <div class="flip-face flip-front glass">
-                <div class="highlight-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
-                <h3>17x MySQL speedup</h3>
-                <dl><dt>Problem</dt><dd>Slow MySQL queries in PostScanMail took about 7 s.</dd><dt>Solution</dt><dd>Added indexes and rewrote queries to remove unnecessary joins, alongside a scalability refactor of the codebase.</dd></dl>
-                <p class="flip-result"><span class="flip-result-k">Result</span>~7 s to ~0.4 s: about 17x faster</p>
-              </div>
-            </div>
-          </article>
-
           <article class="flip-card reveal" aria-label="Tenant-isolated Redis caching">
             <div class="flip-inner">
               <div class="flip-face flip-front glass">
@@ -286,6 +275,17 @@
                 <h3>Tenant-isolated Redis caching</h3>
                 <dl><dt>Problem</dt><dd>Tenant settings were read on nearly every request, and a shared cache risks leaking data across tenants.</dd><dt>Solution</dt><dd>Cache-aside Redis caching with keys namespaced by tenant ID, invalidated on every save.</dd></dl>
                 <p class="flip-result"><span class="flip-result-k">Result</span>Hot settings from cache, no cross-tenant leaks</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="flip-card reveal" aria-label="17x MySQL speedup">
+            <div class="flip-inner">
+              <div class="flip-face flip-front glass">
+                <div class="highlight-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.7 4 3 9 3s9-1.3 9-3V5"/><path d="M3 12c0 1.7 4 3 9 3s9-1.3 9-3"/></svg></div>
+                <h3>17x MySQL speedup</h3>
+                <dl><dt>Problem</dt><dd>Slow MySQL queries in PostScanMail took about 7 s.</dd><dt>Solution</dt><dd>Added indexes and rewrote queries to remove unnecessary joins, alongside a scalability refactor of the codebase.</dd></dl>
+                <p class="flip-result"><span class="flip-result-k">Result</span>~7 s to ~0.4 s: about 17x faster</p>
               </div>
             </div>
           </article>
@@ -464,7 +464,7 @@
       <div class="container">
         <span class="section-kicker reveal" aria-hidden="true">16 m</span>
         <h2 id="contact-h" class="section-title reveal">Come up for air</h2>
-        <p class="contact-intro reveal">I'm open to new roles and to relocating (EU Blue Card eligible). Email or LinkedIn is the quickest way to reach me.</p>
+        <p class="contact-intro reveal">I'm open to new roles and to relocating to the EU. Email or LinkedIn is the quickest way to reach me.</p>
         <a class="btn btn-primary contact-cta reveal" href="mailto:michel.emad.wakim@gmail.com">Email me</a>
         <div class="contact-links">
           <a class="contact-link glass reveal" href="https://github.com/MichelAbdelmalek" target="_blank" rel="noopener noreferrer">

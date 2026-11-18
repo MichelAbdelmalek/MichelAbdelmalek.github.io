@@ -15,3 +15,6 @@ preview/
 Thumbs.db
 .vscode/
 .idea/
+
+# CV LaTeX source (master lives on Overleaf)
+cv/
