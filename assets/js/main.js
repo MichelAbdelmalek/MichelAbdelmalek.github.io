@@ -119,7 +119,7 @@
         hyF = big ? 0.26 : 0.2; cxF = big ? 0.5 : 0.55;
         var dpr = Math.min(window.devicePixelRatio || 1, 2);
         if (big) {
-          if (W * H * dpr * dpr > 5200000) dpr = Math.sqrt(5200000 / (W * H));
+          if (W * H * dpr * dpr > 8300000) dpr = Math.sqrt(8300000 / (W * H));
           if (Q === 1) dpr = Math.min(dpr, 1);
           if (Q >= 2) dpr = Math.min(dpr, 0.75);
         }
@@ -163,6 +163,100 @@
         }
         lg.putImageData(img, 0, 0);
       };
+      /* GPU floor: the same tile, lane and caustic math as floor(), evaluated by a
+         WebGL shader for every screen pixel, so the floor stays sharp up to 4K.
+         Coordinates stay in the low-res units above, so the look is unchanged.
+         Falls back to the CPU floor() when WebGL is unavailable. */
+      var gl = null, glc = null, glU = {};
+      var initGL = function () {
+        try {
+          glc = document.createElement("canvas");
+          var c = glc.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false, powerPreference: "high-performance" });
+          if (!c) return null;
+          var deriv = !!c.getExtension("OES_standard_derivatives");
+          var vs = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+          var fs = (deriv ? "#define AA 1\n#extension GL_OES_standard_derivatives : enable\n" : "") + [
+            "#ifdef GL_FRAGMENT_PRECISION_HIGH",
+            "precision highp float;",
+            "#else",
+            "precision mediump float;",
+            "#endif",
+            "uniform vec2 uRes, uLow; uniform float uCx, uHy, uCamZ, uT; uniform vec3 uRgb; uniform vec4 uRip[5];",
+            "const float K = 5.5, LANE = 2.2, TILE = 1.1;",
+            "float line(float d, float w, float fw) { float we = max(w, fw); return max(0., 1. - d / we) * (w / we); }",
+            "void main() {",
+            "  vec2 q = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uRes * uLow;",
+            "  float yn = (q.y - uHy) / (uLow.y - uHy);",
+            "  if (yn <= 0.03) { gl_FragColor = vec4(0.); return; }",
+            "  float z = 1. / yn, fade = min(1., (yn - 0.03) * 4.5);",
+            "  float cl = clamp(1.5 - z * 0.14, 0.15, 1.), tl = max(0.12, 1. - z * 0.085);",
+            "  float wTile = 0.035 + 0.012 * z, wMark = 0.1 + 0.014 * z;",
+            "  float fx = (q.x - uCx) / uLow.x * z * K, fz = z * 2. + uCamZ;",
+            "  float ox = 0.16 * sin(fz * 1.3 + uT + fx * 0.7) + 0.08 * sin(fx * 2.1 - uT * 0.7 + fz * 0.4);",
+            "  float oz = 0.16 * cos(fx * 1.1 + uT * 0.8 + fz * 0.9);",
+            "  for (int r = 0; r < 5; r++) {",
+            "    vec4 rp = uRip[r];",
+            "    float dd = length(vec2(q.x - rp.x, (q.y - rp.y) * 2.6));",
+            "    float e = (dd - rp.z) / 5.;",
+            "    float wv = exp(-e * e) * rp.w;",
+            "    ox += wv * 0.35 * sin(dd * 0.9); oz += wv * 0.35 * cos(dd * 0.9);",
+            "  }",
+            "  float X = fx + ox, Z = fz + oz;",
+            "  float ft = X / TILE, ft2 = Z / TILE;",
+            "  float dX = abs(ft - floor(ft + 0.5)) * TILE, dZ = abs(ft2 - floor(ft2 + 0.5)) * TILE;",
+            "  float fl = X / LANE, lr = floor(fl + 0.5), dM = abs(fl - lr) * LANE;",
+            "#ifdef AA",
+            "  float fwX = fwidth(X), fwZ = fwidth(Z);",
+            "#else",
+            "  float fwX = 0., fwZ = 0.;",
+            "#endif",
+            "  float tile = max(line(dX, wTile, fwX), line(dZ, wTile, fwZ));",
+            "  float mark = abs(lr) <= 2. ? line(dM, wMark, fwX) : 0.;",
+            "  float s1 = sin(X * 2.6 + 1.7 * sin(Z * 2.1 + uT * 0.7));",
+            "  float s2 = sin(Z * 3.1 + 1.5 * sin(X * 1.7 - uT * 0.6));",
+            "  float c = 1. - abs(sin(s1 * 2.1 + s2 * 2.1)); c = c * c * c * c * c * c * cl;",
+            "  float a = clamp(fade * (0.05 + tile * 0.42 * tl + mark * 0.5 + c * 0.55), 0., 1.);",
+            "  gl_FragColor = vec4(uRgb * a, a);",
+            "}"].join("\n");
+          var sh = function (type, src) {
+            var o = c.createShader(type); c.shaderSource(o, src); c.compileShader(o);
+            if (!c.getShaderParameter(o, c.COMPILE_STATUS)) throw new Error(c.getShaderInfoLog(o));
+            return o;
+          };
+          var pr = c.createProgram();
+          c.attachShader(pr, sh(c.VERTEX_SHADER, vs)); c.attachShader(pr, sh(c.FRAGMENT_SHADER, fs));
+          c.linkProgram(pr);
+          if (!c.getProgramParameter(pr, c.LINK_STATUS)) throw new Error(c.getProgramInfoLog(pr));
+          c.useProgram(pr);
+          c.bindBuffer(c.ARRAY_BUFFER, c.createBuffer());
+          c.bufferData(c.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), c.STATIC_DRAW);
+          var loc = c.getAttribLocation(pr, "p");
+          c.enableVertexAttribArray(loc); c.vertexAttribPointer(loc, 2, c.FLOAT, false, 0, 0);
+          ["uRes", "uLow", "uCx", "uHy", "uCamZ", "uT", "uRgb", "uRip"].forEach(function (n) { glU[n] = c.getUniformLocation(pr, n); });
+          glc.addEventListener("webglcontextlost", function (e) { e.preventDefault(); gl = null; });
+          return c;
+        } catch (err) { return null; }
+      };
+      var glFloor = function (rgb, cxL, hyL, camZ) {
+        if (glc.width !== cv.width || glc.height !== cv.height) {
+          glc.width = cv.width; glc.height = cv.height; gl.viewport(0, 0, cv.width, cv.height);
+        }
+        var rip = new Float32Array(20);
+        for (var n = 0; n < ripples.length && n < 5; n++) {
+          rip[n * 4] = ripples[n].x; rip[n * 4 + 1] = ripples[n].y; rip[n * 4 + 2] = ripples[n].r; rip[n * 4 + 3] = ripples[n].a;
+        }
+        gl.uniform2f(glU.uRes, cv.width, cv.height);
+        gl.uniform2f(glU.uLow, LW, LH);
+        gl.uniform1f(glU.uCx, cxL); gl.uniform1f(glU.uHy, hyL);
+        gl.uniform1f(glU.uCamZ, camZ); gl.uniform1f(glU.uT, t);
+        gl.uniform3f(glU.uRgb, rgb[0] / 255, rgb[1] / 255, rgb[2] / 255);
+        gl.uniform4fv(glU.uRip, rip);
+        gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+      };
+      gl = initGL();
+      cv.dataset.renderer = gl ? "webgl" : "canvas";
+
       var slowSum = 0, slowN = 0, lastTs = 0;
       var draw = function (ts) {
         if (Q >= 2 && last && ts - last < 30) { raf = requestAnimationFrame(draw); return; }
@@ -184,8 +278,9 @@
         var camZ = t * SPEED, k, i;
         if (frame % (Q >= 1 ? 3 : 2) === 0 || frame === 1) {
           for (i = ripples.length - 1; i >= 0; i--) { ripples[i].r += 0.9; ripples[i].a *= 0.965; if (ripples[i].a < 0.04) ripples.splice(i, 1); }
-          floor(light ? [255, 255, 255] : dot, cx * LW / W, hy * LH / H, camZ);
+          if (!gl) floor(light ? [255, 255, 255] : dot, cx * LW / W, hy * LH / H, camZ);
         }
+        if (gl) glFloor(light ? [255, 255, 255] : dot, cx * LW / W, hy * LH / H, camZ);
         g.clearRect(0, 0, W, H);
         var gr = g.createLinearGradient(0, hy, 0, H);
         gr.addColorStop(0, "rgba(" + dot + ",0.0)"); gr.addColorStop(0.35, "rgba(" + dot + "," + (light ? 0.3 : 0.06) + ")"); gr.addColorStop(1, "rgba(" + dot + "," + (light ? 0.55 : 0.16) + ")");
@@ -195,7 +290,7 @@
         wl.addColorStop(0, "rgba(" + dot + ",0)"); wl.addColorStop(0.5, "rgba(" + (light ? "255,255,255" : dot) + "," + (light ? 0.55 : 0.22) + ")"); wl.addColorStop(1, "rgba(" + dot + ",0)");
         g.fillStyle = wl; g.fillRect(0, hy - H * 0.05, W, H * 0.11);
         g.imageSmoothingEnabled = true;
-        g.drawImage(lo, 0, 0, W, H);
+        g.drawImage(gl ? glc : lo, 0, 0, W, H);
 
         // lane ropes with buoys that stream toward the viewer (buoys batched into few fills)
         var ropes = big ? [-4.5, -3.5, -2.5, -1.5, -0.5, 0.5, 1.5, 2.5, 3.5, 4.5] : [-2.5, -1.5, -0.5, 0.5, 1.5, 2.5], rs = big ? 0.22 : 0.4, zMax = 16, PER = 1.2, NB = 26;
@@ -203,7 +298,7 @@
         g.beginPath();
         for (k = 0; k < ropes.length; k++) {
           var u = ropes[k], zz;
-          for (zz = zMax; zz >= 1; zz -= 0.25) {
+          for (zz = zMax; zz >= 1; zz -= Math.max(0.03, zz * 0.025)) {
             var s = 1 / zz;
             var rx = cx + u * W * rs * s + Math.sin(zz * 1.7 + t * 1.2 + k) * 2.5 * s, ry = hy + (H - hy) * s;
             if (zz === zMax) g.moveTo(rx, ry); else g.lineTo(rx, ry);
@@ -314,9 +409,72 @@
         var q = x + n * 317;
         return 9 * Math.sin(q * 0.008 + t * 0.7) + 5 * Math.sin(q * 0.021 - t * 1.1) + 2.5 * Math.sin(q * 0.05 + t * 1.9) + 1.2 * Math.sin(q * 0.11 - t * 2.6);
       };
+      /* GPU caustics: one shared WebGL shader draws each edge's light pattern at
+         full screen resolution (same math as the CPU loop below, which stays as
+         the fallback when WebGL is unavailable). */
+      var wgl = null, wglc = null, wU = {};
+      (function () {
+        try {
+          wglc = document.createElement("canvas");
+          var c = wglc.getContext("webgl", { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false });
+          if (!c) return;
+          var fs = [
+            "#ifdef GL_FRAGMENT_PRECISION_HIGH",
+            "precision highp float;",
+            "#else",
+            "precision mediump float;",
+            "#endif",
+            "uniform vec2 uRes, uSize; uniform float uT, uN, uGain; uniform vec3 uRgb;",
+            "float surf(float x) { float q = x + uN * 317.;",
+            "  return 9. * sin(q * 0.008 + uT * 0.7) + 5. * sin(q * 0.021 - uT * 1.1) + 2.5 * sin(q * 0.05 + uT * 1.9) + 1.2 * sin(q * 0.11 - uT * 2.6); }",
+            "void main() {",
+            "  vec2 q = vec2(gl_FragCoord.x, uRes.y - gl_FragCoord.y) / uRes * uSize;",
+            "  float dep = (q.y - (uSize.y * 0.55 + surf(q.x))) / uSize.y;",
+            "  if (dep < 0.) { gl_FragColor = vec4(0.); return; }",
+            "  float fade = exp(-dep * 6.5);",
+            "  float s1 = sin(q.x * 0.045 + 1.5 * sin(q.y * 0.11 + uT * 0.8 + uN));",
+            "  float s2 = sin(q.y * 0.14 + 1.3 * sin(q.x * 0.037 - uT * 0.7));",
+            "  float c = 1. - abs(sin(s1 * 2. + s2 * 2.)); c = c * c * c * c * c;",
+            "  float a = min(1., c * fade * uGain);",
+            "  gl_FragColor = vec4(uRgb * a, a);",
+            "}"].join("\n");
+          var sh = function (type, src) {
+            var o = c.createShader(type); c.shaderSource(o, src); c.compileShader(o);
+            if (!c.getShaderParameter(o, c.COMPILE_STATUS)) throw new Error(c.getShaderInfoLog(o));
+            return o;
+          };
+          var pr = c.createProgram();
+          c.attachShader(pr, sh(c.VERTEX_SHADER, "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}"));
+          c.attachShader(pr, sh(c.FRAGMENT_SHADER, fs));
+          c.linkProgram(pr);
+          if (!c.getProgramParameter(pr, c.LINK_STATUS)) throw new Error(c.getProgramInfoLog(pr));
+          c.useProgram(pr);
+          c.bindBuffer(c.ARRAY_BUFFER, c.createBuffer());
+          c.bufferData(c.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), c.STATIC_DRAW);
+          var loc = c.getAttribLocation(pr, "p");
+          c.enableVertexAttribArray(loc); c.vertexAttribPointer(loc, 2, c.FLOAT, false, 0, 0);
+          ["uRes", "uSize", "uT", "uN", "uGain", "uRgb"].forEach(function (n) { wU[n] = c.getUniformLocation(pr, n); });
+          wglc.addEventListener("webglcontextlost", function (ev) { ev.preventDefault(); wgl = null; });
+          wgl = c;
+        } catch (err) { wgl = null; }
+      })();
+      edges.forEach(function (cv) { cv.dataset.renderer = wgl ? "webgl" : "canvas"; });
+      var glCaustics = function (e, t, lightMode, col) {
+        var w = e.cv.width, h = e.cv.height;
+        if (wglc.width !== w || wglc.height !== h) { wglc.width = w; wglc.height = h; }
+        wgl.viewport(0, 0, w, h);
+        wgl.uniform2f(wU.uRes, w, h); wgl.uniform2f(wU.uSize, e.W, e.H);
+        wgl.uniform1f(wU.uT, t); wgl.uniform1f(wU.uN, e.n);
+        wgl.uniform1f(wU.uGain, lightMode ? 1 : 200 / 255);
+        wgl.uniform3f(wU.uRgb, col[0] / 255, col[1] / 255, col[2] / 255);
+        wgl.clearColor(0, 0, 0, 0); wgl.clear(wgl.COLOR_BUFFER_BIT);
+        wgl.drawArrays(wgl.TRIANGLES, 0, 3);
+      };
       var drawEdge = function (e, t, alt, altA, lightMode, dot) {
         var g = e.g, W = e.W, H = e.H, base = H * 0.55, x, y;
         g.clearRect(0, 0, W, H);
+        if (wgl) glCaustics(e, t, lightMode, lightMode ? [255, 255, 255] : dot);
+        else {
         var d = e.img.data, sx = W / e.lw, sy = H / e.lh;
         for (var ly = 0; ly < e.lh; ly++) {
           for (var lx = 0; lx < e.lw; lx++) {
@@ -333,11 +491,12 @@
           }
         }
         e.lg.putImageData(e.img, 0, 0);
+        }
         // water body below the surface, with a feathered edge instead of a hard line
         var body = function (dy) {
           g.beginPath();
           g.moveTo(0, H + 10);
-          for (x = 0; x <= W; x += 6) g.lineTo(x, base + surf(x, t, e.n) + dy);
+          for (x = 0; x <= W; x += 3) g.lineTo(x, base + surf(x, t, e.n) + dy);
           g.lineTo(W, H + 10); g.closePath();
         };
         g.fillStyle = "rgb(" + alt + ")";
@@ -345,19 +504,19 @@
         var widths = [20, 13, 7];
         for (var fi = 0; fi < widths.length; fi++) {
           g.beginPath();
-          for (x = 0; x <= W; x += 6) { y = base + surf(x, t, e.n) - widths[fi] * 0.25; if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+          for (x = 0; x <= W; x += 3) { y = base + surf(x, t, e.n) - widths[fi] * 0.25; if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
           g.lineWidth = widths[fi]; g.globalAlpha = 0.12 * altA; g.stroke();
         }
         g.globalAlpha = altA;
         g.save();
         body(0); g.fill(); g.globalAlpha = 1; g.clip();
         g.imageSmoothingEnabled = true;
-        g.drawImage(e.lo, 0, 0, W, H);
+        if (wgl) g.drawImage(wglc, 0, 0, W, H); else g.drawImage(e.lo, 0, 0, W, H);
         g.restore();
         // a soft sheen along the wave, no crisp line
         var sheen = lightMode ? [255, 255, 255] : [190, 235, 255];
         g.beginPath();
-        for (x = 0; x <= W; x += 6) { y = base + surf(x, t, e.n); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
+        for (x = 0; x <= W; x += 3) { y = base + surf(x, t, e.n); if (x === 0) g.moveTo(x, y); else g.lineTo(x, y); }
         g.lineWidth = 14; g.lineJoin = "round"; g.strokeStyle = "rgba(" + sheen + "," + (lightMode ? 0.28 : 0.07) + ")"; g.stroke();
         g.lineWidth = 6; g.strokeStyle = "rgba(" + sheen + "," + (lightMode ? 0.4 : 0.09) + ")"; g.stroke();
       };
@@ -406,7 +565,7 @@
         };
       };
       var resize = function () {
-        var dpr = 1;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
         W = window.innerWidth; H = window.innerHeight;
         cv.width = W * dpr; cv.height = H * dpr;
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -415,7 +574,6 @@
         bubbles.length = n;
       };
       var frame = function (ts) {
-        if (last && ts - last < 30) { raf = requestAnimationFrame(frame); return; }
         var dt = last ? Math.min(0.05, (ts - last) / 1000) : 0.016; last = ts; t += dt;
         var cs = getComputedStyle(document.documentElement);
         var dot = (cs.getPropertyValue("--canvas-dot").trim() || "125,211,252").split(",").map(Number);
