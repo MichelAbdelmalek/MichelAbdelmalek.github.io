@@ -82,8 +82,10 @@
       if (reduceMotion.matches) {
         typed.textContent = phrases[0];
       } else {
-        var pi = 0, ci = 0, deleting = false;
-        (function tick() {
+        // Start with the full title shown so it is readable on first paint; cycle after a pause.
+        var pi = 0, ci = phrases[0].length, deleting = true;
+        typed.textContent = phrases[0];
+        setTimeout(function tick() {
           var word = phrases[pi];
           ci += deleting ? -1 : 1;
           typed.textContent = word.slice(0, ci);
@@ -91,7 +93,7 @@
           if (!deleting && ci === word.length) { deleting = true; delay = 1600; }
           else if (deleting && ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; delay = 350; }
           setTimeout(tick, delay);
-        })();
+        }, 3500);
       }
     }
 
@@ -426,7 +428,7 @@
           var x = b.x + Math.sin(t * 0.8 + b.ph) * b.wob;
           var breathe = 1 + 0.1 * Math.sin(t * b.br * 2 + b.ph);
           var r = b.r * breathe;
-          var fadeTop = Math.min(1, b.y / (H * 0.25) + 0.2);
+          var fadeTop = Math.max(0, Math.min(1, b.y / Math.max(1, H * 0.25) + 0.2));
           var al = b.a * fadeTop;
           var grd = g.createRadialGradient(x, b.y, r * 0.55, x, b.y, r);
           grd.addColorStop(0, "rgba(" + dot + ",0)");
