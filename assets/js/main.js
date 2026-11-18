@@ -523,6 +523,48 @@
       revealEls.forEach(function (el) { revealObs.observe(el); });
     }
 
+    /* ---------- Cards floating on water ---------- */
+    (function () {
+      if (reduceMotion.matches || !("IntersectionObserver" in window)) return;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
+      var els = document.querySelectorAll(".impact-card, .flip-card, .repo-card, .project-row, .about-facts, .arch-card, .language-badge, .education-card, .timeline-content, .contact-link, .swim-facts li");
+      if (!els.length) return;
+      els.forEach(function (el, i) {
+        var r = el.getBoundingClientRect();
+        var cx = r.left + window.scrollX + r.width / 2, cy = r.top + window.scrollY + r.height / 2;
+        var dur = 8.5 + ((i * 37) % 30) / 10;
+        var phase = (cx * 0.0035 + cy * 0.0021) % 1;
+        el.classList.add("float");
+        el.style.setProperty("--fd", dur.toFixed(1) + "s");
+        el.style.setProperty("--fl", (-phase * dur).toFixed(2) + "s");
+        el.style.setProperty("--fy", (4 + (i % 4)) + "px");
+        el.style.setProperty("--fr", (0.7 + ((i * 13) % 7) / 10).toFixed(1) + "deg");
+        var sh = document.createElement("span");
+        sh.className = "float-shadow";
+        sh.setAttribute("aria-hidden", "true");
+        el.appendChild(sh);
+        sh.addEventListener("animationend", function (e) { if (e.animationName === "ripple-ring") sh.classList.remove("is-rippling"); });
+        el.addEventListener("pointerenter", function () { sh.classList.remove("is-rippling"); void sh.offsetWidth; sh.classList.add("is-rippling"); });
+      });
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { en.target.classList.toggle("float-on", en.isIntersecting); });
+      }, { rootMargin: "80px" });
+      els.forEach(function (el) { io.observe(el); });
+      // Safety net: if the page runs slowly, turn the floating off for good.
+      setTimeout(function () {
+        var n = 0, t0 = performance.now();
+        (function tick() {
+          n++;
+          if (performance.now() - t0 < 2500) { requestAnimationFrame(tick); return; }
+          if (n / 2.5 < 30) {
+            io.disconnect();
+            els.forEach(function (el) { el.classList.remove("float-on"); el.classList.remove("float"); });
+            document.documentElement.classList.add("no-float");
+          }
+        })();
+      }, 1500);
+    })();
+
     /* ---------- Count-up ---------- */
     var counters = document.querySelectorAll(".impact-number");
     function setFinal(el) { el.textContent = el.dataset.target + (el.dataset.suffix || ""); }
