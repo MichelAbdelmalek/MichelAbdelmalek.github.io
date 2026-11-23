@@ -4,7 +4,15 @@
   var root = document.documentElement;
   root.classList.add("js");
 
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  var rmQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  function storedCalm() {
+    // Remembered only for this visit: every new visit starts with the animations on.
+    try { localStorage.removeItem("calm"); } catch (e) { /* ignore */ }
+    try { return sessionStorage.getItem("calm") === "1"; } catch (e) { return false; }
+  }
+  if (storedCalm()) root.classList.add("calm");
+  // "matches" is true for the system setting or for the page's own calm switch
+  var reduceMotion = { get matches() { return rmQuery.matches || root.classList.contains("calm"); } };
 
   /* ---------- Theme ---------- */
   function storedTheme() {
@@ -34,6 +42,26 @@
         root.setAttribute("data-theme", next);
         try { localStorage.setItem("theme", next); } catch (e) { /* storage unavailable */ }
         syncToggleLabel();
+      });
+    }
+
+    /* Calm mode */
+    var calmBtn = document.getElementById("calm-toggle");
+    if (calmBtn) {
+      var calmNote = document.getElementById("calm-note");
+      var syncCalm = function () {
+        var on = root.classList.contains("calm");
+        var label = on ? "Play animations (they are paused)" : "Pause animations (calm mode)";
+        calmBtn.setAttribute("aria-pressed", String(on));
+        calmBtn.setAttribute("aria-label", label);
+        calmBtn.setAttribute("title", label);
+        if (calmNote) calmNote.hidden = !on;
+      };
+      syncCalm();
+      calmBtn.addEventListener("click", function () {
+        var on = !root.classList.contains("calm");
+        try { sessionStorage.setItem("calm", on ? "1" : "0"); } catch (e) { /* storage unavailable */ }
+        location.reload();
       });
     }
 
@@ -264,7 +292,8 @@
         t += dt; frame++;
         // adaptive quality: step down once if this device draws slowly
         if (big && Q < 2 && frame > 20) {
-          slowSum += ts - lastTs; slowN++;
+          var gap = ts - lastTs;
+          if (gap < 120) { slowSum += gap; slowN++; }
           if (slowN >= 60) { if (slowSum / slowN > 26) { Q++; size(); } slowSum = 0; slowN = 0; }
         }
         lastTs = ts;
@@ -731,11 +760,24 @@
       revealEls.forEach(function (el) { revealObs.observe(el); });
     }
 
-    /* ---------- Cards floating on water ---------- */
+    /* ---------- Cards on water: waterline shadow for every card, floating for the key ones ---------- */
     (function () {
+      var allCards = document.querySelectorAll(".impact-card, .flip-card, .project-row, .outside-card, .timeline-content, .about-facts, .arch-card, .language-badge, .education-card, .mini-card, .contact-link");
+      allCards.forEach(function (el) {
+        el.classList.add("has-shadow");
+        var sh = document.createElement("span");
+        sh.className = "float-shadow";
+        sh.setAttribute("aria-hidden", "true");
+        el.appendChild(sh);
+        sh.addEventListener("animationend", function (e) { if (e.animationName === "ripple-ring") sh.classList.remove("is-rippling"); });
+        el.addEventListener("pointerenter", function () {
+          if (reduceMotion.matches) return;
+          sh.classList.remove("is-rippling"); void sh.offsetWidth; sh.classList.add("is-rippling");
+        });
+      });
       if (reduceMotion.matches || !("IntersectionObserver" in window)) return;
       if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return;
-      var els = document.querySelectorAll(".impact-card, .flip-card, .repo-card, .project-row, .about-facts, .arch-card, .language-badge, .education-card, .timeline-content, .contact-link, .swim-facts li");
+      var els = allCards; // every card floats; the safety net below still protects slow devices
       if (!els.length) return;
       els.forEach(function (el, i) {
         var r = el.getBoundingClientRect();
@@ -747,29 +789,37 @@
         el.style.setProperty("--fl", (-phase * dur).toFixed(2) + "s");
         el.style.setProperty("--fy", (4 + (i % 4)) + "px");
         el.style.setProperty("--fr", (0.7 + ((i * 13) % 7) / 10).toFixed(1) + "deg");
-        var sh = document.createElement("span");
-        sh.className = "float-shadow";
-        sh.setAttribute("aria-hidden", "true");
-        el.appendChild(sh);
-        sh.addEventListener("animationend", function (e) { if (e.animationName === "ripple-ring") sh.classList.remove("is-rippling"); });
-        el.addEventListener("pointerenter", function () { sh.classList.remove("is-rippling"); void sh.offsetWidth; sh.classList.add("is-rippling"); });
       });
       var io = new IntersectionObserver(function (entries) {
         entries.forEach(function (en) { en.target.classList.toggle("float-on", en.isIntersecting); });
       }, { rootMargin: "80px" });
       els.forEach(function (el) { io.observe(el); });
-      // Safety net: if the page runs slowly, turn the floating off for good.
+      // Safety net: turn the floating off only if the device is steadily slow.
+      // Gaps from a hidden tab or a busy page load are ignored, and it takes
+      // two slow measurements in a row, so a one-off hiccup never disables it.
       setTimeout(function () {
-        var n = 0, t0 = performance.now();
-        (function tick() {
-          n++;
-          if (performance.now() - t0 < 2500) { requestAnimationFrame(tick); return; }
-          if (n / 2.5 < 30) {
-            io.disconnect();
-            els.forEach(function (el) { el.classList.remove("float-on"); el.classList.remove("float"); });
-            document.documentElement.classList.add("no-float");
+        var deltas = [], lastT = 0, strikes = 0, windows = 0;
+        document.addEventListener("visibilitychange", function () { lastT = 0; deltas.length = 0; });
+        (function tick(ts) {
+          if (!document.hidden && lastT) {
+            var d = ts - lastT;
+            if (d < 120) deltas.push(d);
           }
-        })();
+          lastT = document.hidden ? 0 : ts;
+          if (deltas.length >= 90) {
+            deltas.sort(function (x, y) { return x - y; });
+            strikes = deltas[45] > 42 ? strikes + 1 : 0;
+            deltas.length = 0; windows++;
+            if (strikes >= 2) {
+              io.disconnect();
+              els.forEach(function (el) { el.classList.remove("float-on"); el.classList.remove("float"); });
+              document.documentElement.classList.add("no-float");
+              return;
+            }
+            if (windows >= 4) return;
+          }
+          requestAnimationFrame(tick);
+        })(performance.now());
       }, 1500);
     })();
 
