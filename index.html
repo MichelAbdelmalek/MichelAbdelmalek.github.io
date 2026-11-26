@@ -25,8 +25,8 @@
   <meta name="twitter:image" content="https://michelabdelmalek.github.io/assets/img/og-image.png">
 
   <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <script src="assets/js/main.js"></script>
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261126e">
+  <script src="assets/js/main.js?v=20261126e"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to main content</a>
@@ -157,6 +157,17 @@
                 <h3>17x MySQL speedup</h3>
                 <dl><dt>Problem</dt><dd>Slow MySQL queries in PostScanMail took about 7 s.</dd><dt>Solution</dt><dd>Added indexes and rewrote queries to remove unnecessary joins, alongside a scalability refactor of the codebase.</dd></dl>
                 <p class="flip-result"><span class="flip-result-k">Result</span>~7 s to ~0.4 s: about 17x faster</p>
+              </div>
+            </div>
+          </article>
+
+          <article class="flip-card flip-wide reveal" aria-label="FreightRAG: answers with citations, or none">
+            <div class="flip-inner">
+              <div class="flip-face flip-front glass">
+                <div class="highlight-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+                <h3>FreightRAG: answers with citations, or none</h3>
+                <dl><dt>Problem</dt><dd>A model asked about business documents can guess when the documents don't say, and a shared index can leak one tenant's text into another's answers.</dd><dt>Solution</dt><dd>Hybrid search (vector plus keyword) scoped to the tenant that owns the API key, then an answer built only from the retrieved chunks. Citations are checked in code, and a question about an identifier no chunk contains is refused without calling the model.</dd></dl>
+                <p class="flip-result"><span class="flip-result-k">Result</span>0 of 8 unanswerable questions answered in my evaluation; 94% of fields extracted from clean PDFs</p>
               </div>
             </div>
           </article>
@@ -299,24 +310,41 @@
         <span class="section-kicker reveal" aria-hidden="true">6 m</span>
         <h2 id="proj-h" class="section-title reveal">Projects</h2>
         <div class="projects-list">
-          <article id="project-freightrag" class="project-row glass reveal">
-            <div class="project-preview p-rag" aria-hidden="true">
-              <div class="pv-bar"><i></i><i></i><i></i><span>localhost:8080/scalar/v1</span></div>
-              <picture>
-                <source media="(prefers-reduced-motion: reduce)" srcset="assets/img/projects/freightrag-search-demo-still.webp">
-                <img class="pv-shot" src="assets/img/projects/freightrag-search-demo.gif" alt="" width="960" height="600" loading="lazy">
-              </picture>
-              <span class="pv-shine"></span>
+          <article id="project-freightrag" class="project-row project-featured glass reveal">
+            <div class="project-media">
+              <div class="project-preview p-rag" aria-hidden="true">
+                <div class="pv-bar"><i></i><i></i><i></i><span>localhost:8080/scalar/v1</span></div>
+                <picture>
+                  <source media="(prefers-reduced-motion: reduce)" srcset="assets/img/projects/freightrag-search-demo-still.webp">
+                  <img id="rag-shot" class="pv-shot" src="assets/img/projects/freightrag-search-demo.gif" alt="" width="960" height="600" loading="lazy">
+                </picture>
+                <span class="pv-shine"></span>
+              </div>
+              <div class="rag-tabs" role="group" aria-label="FreightRAG demo recordings">
+                <button type="button" class="rag-tab" data-src="assets/img/projects/freightrag-search-demo.gif" aria-pressed="true">Search</button>
+                <button type="button" class="rag-tab" data-src="assets/img/projects/freightrag-upload-demo.gif" aria-pressed="false">Upload a scan</button>
+                <button type="button" class="rag-tab" data-src="assets/img/projects/freightrag-fields-demo.gif" aria-pressed="false">Pick fields</button>
+              </div>
             </div>
             <div class="project-info">
               <span class="project-num" aria-hidden="true">01</span>
-              <span class="project-kicker">Open source · Learning project</span>
+              <span class="project-kicker">Open source · Featured · Learning project</span>
               <h3 class="project-title"><a class="project-link-stretch" href="https://github.com/MichelAbdelmalek/freightrag" target="_blank" rel="noopener noreferrer">FreightRAG<span class="sr-only"> (opens in a new tab)</span></a></h3>
               <span class="project-biz">Answers questions about freight paperwork, with citations</span>
-              <p class="project-desc">A multi-tenant RAG system for logistics documents such as rate confirmations, bills of lading and invoices, running locally in Docker. It reads text and scanned PDFs (OCR), searches by meaning and keyword, and answers with citations or abstains when the documents don't say. Every query is scoped to the tenant that owns the API key. It also measures itself: 0 of 8 unanswerable questions answered, and 94% of fields extracted from clean PDFs (87% from scans).</p>
+              <p class="project-desc">A multi-tenant RAG system for logistics documents such as rate confirmations, bills of lading and invoices, running locally in Docker. Every query is scoped to the tenant that owns the API key.</p>
+              <ol class="rag-steps">
+                <li><strong>Ingest</strong> text files and scanned PDFs (OCR), split by section and embedded with a local model.</li>
+                <li><strong>Search</strong> by meaning and keyword together (hybrid, fused with RRF).</li>
+                <li><strong>Answer</strong> from the retrieved chunks with citations checked in code, or abstain when the documents don't say.</li>
+              </ol>
+              <ul class="rag-stats" aria-label="Measured results">
+                <li><span class="rag-stat-n">0 of 8</span><span class="rag-stat-l">unanswerable questions answered</span></li>
+                <li><span class="rag-stat-n">94%</span><span class="rag-stat-l">fields extracted from clean PDFs</span></li>
+                <li><span class="rag-stat-n">87%</span><span class="rag-stat-l">fields extracted from scans</span></li>
+              </ul>
               <ul class="skill-chips project-stack"><li class="chip">.NET 10</li><li class="chip">Python</li><li class="chip">PostgreSQL</li><li class="chip">pgvector</li><li class="chip">Ollama</li><li class="chip">OCR</li><li class="chip">DDD</li><li class="chip">Docker</li></ul>
               <span class="project-cta" aria-hidden="true">View on GitHub <span class="arrow">&#8599;</span></span>
-              <p class="project-note">It runs locally in Docker, so there is no live demo. The README has recorded demos and the evaluation results.</p>
+              <p class="project-note">It runs locally in Docker, so there is no live demo. The README has the evaluation results.</p>
             </div>
           </article>
           <article class="project-row glass reveal">
@@ -417,12 +445,16 @@
             <ul class="skill-chips"><li class="chip chip-core">C#</li><li class="chip chip-core">.NET / ASP.NET Core</li><li class="chip chip-core">EF Core</li><li class="chip chip-core">DDD</li><li class="chip chip-core">REST</li><li class="chip chip-core">GraphQL</li><li class="chip chip-core">SSE</li><li class="chip chip-core">Event-driven messaging</li><li class="chip chip-core">Angular</li><li class="chip chip-core">TypeScript</li><li class="chip chip-core">PrimeNG</li><li class="chip chip-core">Tailwind CSS</li><li class="chip chip-core">AWS ECS</li><li class="chip chip-core">AWS Lambda</li><li class="chip chip-core">SQS/SNS</li><li class="chip chip-core">Secrets Manager</li><li class="chip chip-core">Redis</li><li class="chip chip-core">MongoDB</li><li class="chip chip-core">Docker</li><li class="chip chip-core">DataDog</li><li class="chip chip-core">Azure DevOps CI/CD</li><li class="chip chip-core">xUnit</li><li class="chip chip-core">Jasmine + Karma</li></ul>
           </div>
           <div class="skill-group skill-tier reveal">
+            <h3 class="skill-group-title">Applied AI, in FreightRAG</h3>
+            <ul class="skill-chips"><li class="chip chip-earlier">RAG</li><li class="chip chip-earlier">Hybrid search (vector + keyword)</li><li class="chip chip-earlier">Embeddings</li><li class="chip chip-earlier">pgvector</li><li class="chip chip-earlier">Ollama (local LLMs)</li><li class="chip chip-earlier">OCR (Tesseract)</li><li class="chip chip-earlier">Retrieval and answer evaluation</li><li class="chip chip-earlier">Python</li></ul>
+          </div>
+          <div class="skill-group skill-tier reveal">
             <h3 class="skill-group-title">Used at SwiftX and Softxpert</h3>
             <ul class="skill-chips"><li class="chip chip-earlier">Ruby on Rails (SwiftX)</li><li class="chip chip-earlier">Node.js</li><li class="chip chip-earlier">Express.js</li><li class="chip chip-earlier">React</li><li class="chip chip-earlier">Next.js</li><li class="chip chip-earlier">Laravel (PHP)</li><li class="chip chip-earlier">MySQL</li><li class="chip chip-earlier">Vercel</li><li class="chip chip-earlier">Heroku</li><li class="chip chip-earlier">Linux (Ubuntu)</li></ul>
           </div>
           <div class="skill-group skill-tier reveal">
             <h3 class="skill-group-title">Also worked with</h3>
-            <ul class="skill-chips"><li class="chip chip-muted">Java</li><li class="chip chip-muted">Spring Boot</li><li class="chip chip-muted">JUnit</li><li class="chip chip-muted">SQL Server</li><li class="chip chip-muted">PostgreSQL</li><li class="chip chip-muted">CircleCI</li><li class="chip chip-muted">Python</li><li class="chip chip-muted">RAG (pgvector, Ollama)</li></ul>
+            <ul class="skill-chips"><li class="chip chip-muted">Java</li><li class="chip chip-muted">Spring Boot</li><li class="chip chip-muted">JUnit</li><li class="chip chip-muted">SQL Server</li><li class="chip chip-muted">PostgreSQL</li><li class="chip chip-muted">CircleCI</li></ul>
           </div>
         </div>
       </div>

@@ -893,3 +893,17 @@
     }
   });
 })();
+
+
+/* FreightRAG demo tabs: the other recordings load only when chosen */
+document.addEventListener("DOMContentLoaded", function () {
+  var shot = document.getElementById("rag-shot");
+  var tabs = document.querySelectorAll(".rag-tab");
+  if (!shot || !tabs.length) return;
+  tabs.forEach(function (tab) {
+    tab.addEventListener("click", function () {
+      tabs.forEach(function (t) { t.setAttribute("aria-pressed", t === tab ? "true" : "false"); });
+      shot.src = tab.getAttribute("data-src");
+    });
+  });
+});

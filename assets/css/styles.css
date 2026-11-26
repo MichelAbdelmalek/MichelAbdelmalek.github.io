@@ -745,7 +745,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .projects-grid, .impact-grid { grid-auto-rows: 1fr; }
 
 /* ===== Projects showcase ===== */
-.projects-list { display: grid; grid-auto-rows: 1fr; gap: 1.75rem; }
+.projects-list { display: grid; grid-auto-rows: auto; gap: 1.75rem; }
 .project-row {
   position: relative;
   display: grid;
@@ -1367,3 +1367,20 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
   box-shadow: 0 10px 24px rgba(0, 8, 20, 0.3);
 }
 .calm-note[hidden] { display: none; }
+
+/* ===== FreightRAG featured project ===== */
+.project-media { display: grid; gap: 0.75rem; min-width: 0; }
+.rag-tabs { position: relative; z-index: 3; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.rag-tab { padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 99px; background: transparent; color: var(--text); font: inherit; font-size: 0.875rem; cursor: pointer; }
+.rag-tab:hover { border-color: var(--accent-1); }
+.rag-tab[aria-pressed="true"] { border-color: var(--accent-1); color: var(--accent-1); }
+.rag-tab:focus-visible { outline: 3px solid var(--accent-1); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .rag-tabs { display: none; } }
+.rag-steps { margin: 0 0 1rem; padding-left: 1.25rem; display: grid; gap: 0.35rem; color: var(--text); }
+.rag-steps strong { color: var(--text-strong); font-weight: 600; }
+.rag-stats { list-style: none; margin: 0 0 1rem; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
+.rag-stats li { display: grid; gap: 0.15rem; align-content: start; padding: 0.6rem 0.75rem; border: 1px solid var(--border); border-radius: 12px; }
+.rag-stat-n { color: var(--accent-1); font-family: var(--display); font-size: 1.35rem; font-weight: 600; line-height: 1.1; }
+.rag-stat-l { color: var(--text-muted); font-size: 0.8125rem; line-height: 1.3; }
+@media (max-width: 480px) { .rag-stats { grid-template-columns: 1fr; } }
+@media (min-width: 700px) { .highlights-grid .flip-wide { grid-column: 1 / -1; } }
