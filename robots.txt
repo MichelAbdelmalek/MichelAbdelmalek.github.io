@@ -1,2 +1,4 @@
 User-agent: *
 Allow: /
+
+Sitemap: https://michelabdelmalek.github.io/sitemap.xml

@@ -1215,6 +1215,7 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 @media (min-width: 900px) {
   .highlights-grid { padding-bottom: 32px; }
   .highlights-grid .flip-card:nth-child(even) { position: relative; top: 32px; }
+  .highlights-grid .flip-wide { position: relative; top: 32px; }
   .impact-grid { padding-bottom: 20px; }
   .impact-grid .impact-card:nth-child(even) { position: relative; top: 20px; }
   .repo-grid { padding-bottom: 28px; }
@@ -1384,3 +1385,12 @@ body { padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
 .rag-stat-l { color: var(--text-muted); font-size: 0.8125rem; line-height: 1.3; }
 @media (max-width: 480px) { .rag-stats { grid-template-columns: 1fr; } }
 @media (min-width: 700px) { .highlights-grid .flip-wide { grid-column: 1 / -1; } }
+
+/* Contact: CV button and visible email */
+.contact-actions { display: grid; grid-template-columns: 1fr; gap: 0.75rem; max-width: 22rem; margin-bottom: 0.75rem; }
+.contact-actions .contact-cta { margin-bottom: 0; padding: 0.9rem 1rem; justify-content: center; text-align: center; }
+@media (min-width: 700px) { .contact-actions { grid-template-columns: repeat(3, 11rem); max-width: none; } }
+.contact-email { margin-bottom: 2rem; color: var(--text-muted); font-family: var(--mono); font-size: 0.9375rem; user-select: all; }
+
+/* Standalone links: at least 24px tall to tap */
+.repo-links a, .repo-more a, .edu-links a { display: inline-block; min-height: 24px; line-height: 24px; }

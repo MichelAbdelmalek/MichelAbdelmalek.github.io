@@ -89,12 +89,12 @@
     }
 
     /* Optional CV download */
-    var cv = document.getElementById("cv-download");
-    if (cv && window.fetch) {
-      fetch(cv.getAttribute("href"), { method: "HEAD" })
+    var cvBtns = document.querySelectorAll(".cv-download");
+    if (cvBtns.length && window.fetch) {
+      fetch(cvBtns[0].getAttribute("href"), { method: "HEAD" })
         .then(function (r) {
           var type = r.headers.get("content-type") || "";
-          if (r.ok && type.indexOf("html") === -1) cv.hidden = false;
+          if (r.ok && type.indexOf("html") === -1) cvBtns.forEach(function (b) { b.hidden = false; });
         })
         .catch(function () { /* keep hidden */ });
     }
@@ -118,7 +118,10 @@
           ci += deleting ? -1 : 1;
           typed.textContent = word.slice(0, ci);
           var delay = deleting ? 35 : 75;
-          if (!deleting && ci === word.length) { deleting = true; delay = 1600; }
+          if (!deleting && ci === word.length) {
+            if (pi === 0) return; // back on the full title: stay on it
+            deleting = true; delay = 1600;
+          }
           else if (deleting && ci === 0) { deleting = false; pi = (pi + 1) % phrases.length; delay = 350; }
           setTimeout(tick, delay);
         }, 3500);
